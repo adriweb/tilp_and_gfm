@@ -4,6 +4,10 @@
 #include "tilp_defs.h"
 #include <gtk/gtk.h>
 
+extern GtkWidget *main_wnd;
+extern GtkWidget *clist_wnd;
+extern GtkWidget *ctree_wnd;
+
 void show_right_view(int view);
 
 GtkWidget *display_tilp_dbox(void);
