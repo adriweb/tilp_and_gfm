@@ -51,6 +51,9 @@ set(SRC_FILES
 
 add_executable(tilp2 ${SRC_FILES})
 
+#set(MACOSX_BUNDLE_ICON_FILE ${CMAKE_CURRENT_SOURCE_DIR}/icons/logo_tilp.icns)
+#add_executable(tilp2 MACOSX_BUNDLE ${MACOSX_BUNDLE_ICON_FILE} ${SRC_FILES})
+
 if(WIN32)
     target_include_directories(tilp2 PRIVATE "build/msvc")
 endif()
@@ -109,7 +112,17 @@ if(ENABLE_NLS)
 endif()
 
 # .app bundle for macOS - disabled for now, we'll have to check how to make packaging better (see CPack?)
-#set_target_properties(tilp2 PROPERTIES MACOSX_BUNDLE TRUE)
+#set_source_files_properties("logo_tilp.icns" PROPERTIES MACOSX_PACKAGE_LOCATION Resources)
+#set_target_properties(tilp2 PROPERTIES
+#    BUNDLE True
+#    MACOSX_BUNDLE TRUE
+#    MACOSX_BUNDLE_GUI_IDENTIFIER org.lpg.tilp2
+#    MACOSX_BUNDLE_BUNDLE_NAME tilp2
+#    MACOSX_BUNDLE_BUNDLE_VERSION "1.0"
+#    MACOSX_BUNDLE_SHORT_VERSION_STRING "1.0"
+#    MACOSX_BUNDLE_ICONFILE "logo_tilp.icns"
+##    INSTALL_NAME_DIR "@executable_path/../lib"
+#)
 
 # Install rules
 install(TARGETS tilp2
