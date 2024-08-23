@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.12)
+cmake_minimum_required(VERSION 3.15)
 
 project(gfm
         VERSION     1.09
@@ -23,38 +23,49 @@ set(SRC_FILES
         src/ungroup.c)
 
 add_executable(gfm ${SRC_FILES})
+# tilibs contains C++ objects even though this executable has C sources.
+set_target_properties(gfm PROPERTIES LINKER_LANGUAGE CXX)
+tilp_configure_bundled_target(gfm)
+
+include(CheckIPOSupported)
+check_ipo_supported(RESULT lto_supported OUTPUT error)
+if(lto_supported)
+    set_target_properties(gfm PROPERTIES
+            INTERPROCEDURAL_OPTIMIZATION_DEBUG FALSE
+            INTERPROCEDURAL_OPTIMIZATION_RELEASE TRUE
+            INTERPROCEDURAL_OPTIMIZATION_RELWITHDEBINFO TRUE
+    )
+else()
+    message(STATUS "IPO/LTO not supported: <${error}>")
+endif()
 
 if(WIN32)
     target_include_directories(gfm PRIVATE "build/msvc")
 endif()
 
-# External deps
-pkg_check_modules(DEPS REQUIRED gtk+-2.0 libglade-2.0 glib-2.0 ticonv tifiles2 ticalcs2)
+# Static archives must precede the libraries that satisfy their references.
+target_include_directories(gfm PRIVATE ${TILIBS_INCLUDES_DIR})
+target_link_libraries(gfm PRIVATE ${LIBTICALCS2} ${LIBTIFILES2} ${LIBTICABLES2} ${LIBTICONV} ${TILIBS_PLATFORM_LIBRARIES})
 
-try_static_libs_if_needed()
+# External deps
+pkg_check_modules(GFM_GTK2 REQUIRED IMPORTED_TARGET gtk+-2.0>=2.10 libglade-2.0)
+find_package(ZLIB REQUIRED) # for libtifiles
+find_package(LibArchive REQUIRED)
+pkg_check_modules(DEPS REQUIRED IMPORTED_TARGET glib-2.0 libffi)
+
+if(WIN32)
+    find_library(LIBUSB0 NAMES libusb0.lib usb0 REQUIRED)
+    target_link_libraries(gfm PRIVATE ${LIBUSB0})
+else()
+    pkg_check_modules(LibUSB REQUIRED IMPORTED_TARGET libusb-1.0>=1.0.16)
+    target_link_libraries(gfm PRIVATE PkgConfig::LibUSB)
+endif()
+
+target_link_libraries(gfm PRIVATE PkgConfig::GFM_GTK2 ZLIB::ZLIB LibArchive::LibArchive PkgConfig::DEPS)
 
 # Defines
 set(SHAREDIR  "${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_DATAROOTDIR}/${PROJECT_NAME}")
 target_compile_definitions(gfm PRIVATE PACKAGE="${PROJECT_NAME}" VERSION="${PROJECT_VERSION}" SHARE_DIR="${SHAREDIR}")
-
-# CFLAGS and include dirs
-target_compile_options(gfm PRIVATE ${DEPS_CFLAGS})
-
-# Link-related properties, flags...
-if(TRY_STATIC_LIBS)
-    target_compile_options(gfm PRIVATE ${DEPS_STATIC_CFLAGS})
-    target_link_directories(gfm PRIVATE ${TRY_STATIC_DEPS_LIBSDIRS})
-    target_link_libraries(gfm ${TRY_STATIC_DEPS_LDFLAGS_OTHER} ${TRY_STATIC_DEPS_LIBS})
-    if(Iconv_FOUND AND NOT Iconv_IS_BUILT_IN)
-        target_include_directories(gfm PRIVATE ${Iconv_INCLUDE_DIRS})
-        target_link_directories(gfm PRIVATE ${Iconv_LIBRARY_DIRS})
-        target_link_libraries(gfm ${Iconv_LIBRARIES})
-    endif()
-else()
-    target_compile_options(gfm PRIVATE ${DEPS_CFLAGS})
-    target_link_directories(gfm PRIVATE ${DEPS_LIBRARY_DIRS})
-    target_link_libraries(gfm ${DEPS_LDFLAGS_OTHER} ${DEPS_LIBRARIES})
-endif()
 
 if(APPLE OR UNIX)
     set_target_properties(gfm PROPERTIES LINK_FLAGS "-rdynamic")  # rdynamic is needed for the GUI callback functions

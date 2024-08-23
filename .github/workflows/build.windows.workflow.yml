@@ -2,89 +2,128 @@ name: Build Windows
 
 on:
   push:
-    branches: [ master, gtk3 ]
+    branches: [ master, gtk3, fullvcpkg ]
   pull_request:
-    branches: [ master, gtk3 ]
+    branches: [ master, gtk3, fullvcpkg ]
   release:
     types: [published]
 
 jobs:
   build:
-    name: "Build target: ${{ matrix.arch }}-${{ matrix.config }}"
-    runs-on: windows-latest
+    name: "Build: ${{ matrix.arch }} ${{ matrix.os }} - ${{ matrix.gtkver }}"
+    runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
       matrix:
-        arch: [x64]
-        config: [ReleaseDynamic, ReleaseStatic]
-        include:
-          - arch: x64
-            arch_name: 64-bit
-            tilibsdeps: tilibs_windows-2022-x64
+        os: [windows-2022]
+        gtkver: [GTK3]
+        arch: [x86,x64]
+        config: [Release]
+
+    env:
+      SCCACHE_GHA_ENABLED: "true"
+      # Override run-vcpkg's default, which still selects the removed x-gha backend.
+      VCPKG_BINARY_SOURCES: clear;default,readwrite
+      # Match run-vcpkg's normalized Windows spelling: cache versions hash this path.
+      VCPKG_DEFAULT_BINARY_CACHE: ${{ github.workspace }}\.vcpkg-binary-cache
+      # vcpkg sanitizes the Windows environment before configuring ports.
+      VCPKG_KEEP_ENV_VARS: CMAKE_C_COMPILER_LAUNCHER;CMAKE_CXX_COMPILER_LAUNCHER;SCCACHE_GHA_ENABLED;ACTIONS_RESULTS_URL;ACTIONS_RUNTIME_TOKEN;ACTIONS_CACHE_SERVICE_V2
+
     steps:
-    - name: Checkout Git Repo
-      uses: actions/checkout@v3
-      with:
-        submodules: 'recursive'
+      - name: Remove Perl Strawberry installation
+        # Removes conflicting headers from include paths
+        run: |
+          Remove-Item -Recurse -Force C:/Strawberry
 
-    - name: Install latest CMake
-      uses: lukka/get-cmake@a70f1cfa1857a3eecfe0d34962269e1b1e8be56c # latest as of 2024-08-08
+      - name: Checkout Git Repo
+        uses: actions/checkout@v7
+        with:
+          submodules: 'recursive'
 
-    - name: Restore artifacts, or setup vcpkg (do not install any package)
-      uses: lukka/run-vcpkg@d87e7fac99f22776a4973d7e413921ea254c1fc9 # latest as of 2024-08-08
-      with:
-        vcpkgGitCommitId: 'a993be073c6baea8674117f3eaed6e2d2486aaae' # latest as of 2024-08-20
-        vcpkgDirectory: C:/vcpkg
-      env:
-        VCPKG_ROOT: C:/vcpkg
+      - name: Resolve pushed tilibs experimental2 tip
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python .github/scripts/update-tilibs-port.py
 
-    - name: Create prefix folder
-      shell: cmd
-      run: mkdir prefix
+      - name: Install latest CMake
+        uses: lukka/get-cmake@16e8153a8b4918849d92aad131befe67a3705daa # latest as of 2026-11-15
 
-    - name: TEMP create tilibs folder stuff where they are expected
-      shell: cmd
-      run: mkdir D:\a\tilibs\tilibs\tilibs.build\Win-${{ matrix.arch }}
+      - name: Set up sccache
+        uses: mozilla-actions/sccache-action@fc920bf0ec8de6ee65d409111f7ec508035751ba # latest as of 2026-11-15
+        with:
+          version: v0.19.0
 
-    - name: Get tilibs artifact
-      id: download-artifact
-      uses: dawidd6/action-download-artifact@268677152d06ba59fcec7a7f0b5d961b6ccd7e1e # latest as of 2023-11-12
-      with:
-        repo: debrouxl/tilibs
-        branch: experimental2
-        workflow: build.windows.workflow.yml
-        workflow_conclusion: success
-        github_token: ${{secrets.GITHUB_TOKEN}}
-        path: 'D:\a\tilibs\tilibs\tilibs.build\Win-${{ matrix.arch }}'
+      - name: Configure compiler cache
+        shell: bash
+        run: |
+          # CMake reads these for both the application and CMake-based vcpkg ports.
+          echo "CMAKE_C_COMPILER_LAUNCHER=$SCCACHE_PATH" >> "$GITHUB_ENV"
+          echo "CMAKE_CXX_COMPILER_LAUNCHER=$SCCACHE_PATH" >> "$GITHUB_ENV"
+          "$SCCACHE_PATH" --start-server
+          mkdir -p .vcpkg-binary-cache
 
-    - name: TEMP move tilibs stuff where they are expected
-      shell: cmd
-      run: rename "D:\a\tilibs\tilibs\tilibs.build\Win-${{ matrix.arch }}\${{ matrix.tilibsdeps }}" "prefix"
+      - name: Restore vcpkg binary cache
+        id: vcpkg-cache
+        uses: actions/cache/restore@caa296126883cff596d87d8935842f9db880ef25 # v5
+        with:
+          path: ${{ env.VCPKG_DEFAULT_BINARY_CACHE }}
+          key: vcpkg-v1-${{ matrix.os }}-${{ matrix.arch }}-${{ hashFiles('vcpkg.json', 'CMakePresets.json', '.cmake/**') }}-${{ matrix.gtkver }}-${{ github.run_id }}-${{ github.run_attempt }}
+          restore-keys: |
+            vcpkg-v1-${{ matrix.os }}-${{ matrix.arch }}-${{ hashFiles('vcpkg.json', 'CMakePresets.json', '.cmake/**') }}-
+            vcpkg-v1-${{ matrix.os }}-${{ matrix.arch }}-
 
-    - name: Build tilp ${{ matrix.config }} on Windows ${{ matrix.arch_name }}
-      uses: lukka/run-cmake@4b1adc1944be8367be9f4e08303ce49918db8e3c # latest as of 2024-08-08
-      with:
-        cmakeListsTxtPath: '${{ github.workspace }}/CMakeLists.txt'
-        configurePreset: '${{ matrix.arch }}-${{ matrix.config }}'
-        buildPreset: '${{ matrix.arch }}-${{ matrix.config }}'
-      env:
-        VCPKG_FORCE_SYSTEM_BINARIES: 1
-        CMAKE_INSTALL_PREFIX_OVERRIDE: '${{ github.workspace }}/prefix'
-        VCPKG_ROOT: C:/vcpkg
+      - name: Restore artifacts, or setup vcpkg (do not install any package)
+        uses: lukka/run-vcpkg@d4e6061274d7ffb3e33694898aed9fb6ece66310 # latest as of 2026-11-15
+        with:
+          vcpkgDirectory: C:/vcpkg
+          binaryCachePath: ${{ github.workspace }}/.vcpkg-binary-cache
 
-    - name: Install tilp
-      uses: lukka/run-cmake@4b1adc1944be8367be9f4e08303ce49918db8e3c # latest as of 2024-08-08
-      with:
-        cmakeListsTxtPath: '${{ github.workspace }}/CMakeLists.txt'
-        buildPreset: '${{ matrix.arch }}-${{ matrix.config }}'
-        buildPresetAdditionalArgs: "['--target install']"
+      - name: create install folder
+        run: |
+          mkdir "${{ github.workspace }}/tilp.build/Win-${{ matrix.arch }}-${{ matrix.gtkver }}/prefix"
 
-    - name: Prepare install folder for upload
-      shell: cmd
-      run: rename prefix tilp_windows_gtk3_${{ matrix.config }}
+      - name: Build and install tilp (${{ matrix.gtkver }}) and gfm ${{ matrix.config }} on Windows ${{ matrix.arch }}
+        uses: lukka/run-cmake@338027a0ca347414b3abaa50a883bdc2b91d1812 # latest as of 2026-11-15
+        with:
+          cmakeListsTxtPath: '${{ github.workspace }}/CMakeLists.txt'
+          configurePreset: 'Win-${{ matrix.arch }}-${{ matrix.gtkver }}'
+          configurePresetAdditionalArgs: "['-DDEPS_RELEASE_ONLY=ON']"
+          buildPreset: 'Win-${{ matrix.arch }}-${{ matrix.gtkver }}-${{ matrix.config }}'
+          buildPresetAdditionalArgs: "['--target', 'install']"
+        env:
+          CMAKE_INSTALL_PREFIX_OVERRIDE: ${{ github.workspace }}/tilp.build/Win-${{ matrix.arch }}-${{ matrix.gtkver }}/prefix
+          VCPKG_DEFAULT_TRIPLET: ${{ matrix.arch }}-windows
+          VCPKG_DEFAULT_HOST_TRIPLET: x64-windows-static-release
+          VCPKG_FORCE_SYSTEM_BINARIES: 1
 
-    - name: Upload install folder
-      uses: actions/upload-artifact@v4
-      with:
-        name: tilp_windows_gtk3_${{ matrix.config }}
-        path: tilp_windows_gtk3_${{ matrix.config }}
+      - name: Verify static MSVC runtime linkage
+        shell: pwsh
+        run: |
+          $vswhere = "${env:ProgramFiles(x86)}/Microsoft Visual Studio/Installer/vswhere.exe"
+          $dumpbin = & $vswhere -latest -products '*' -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 -find 'VC\Tools\MSVC\**\bin\Hostx64\x64\dumpbin.exe' | Select-Object -First 1
+          if (-not $dumpbin) { throw 'dumpbin.exe was not found' }
+          $executables = @(Get-ChildItem '${{ github.workspace }}/tilp.build/Win-${{ matrix.arch }}-${{ matrix.gtkver }}/prefix/bin/*.exe')
+          if ($executables.Count -eq 0) { throw 'No installed executables found' }
+          foreach ($exe in $executables) {
+            $imports = & $dumpbin /DEPENDENTS $exe.FullName
+            if ($LASTEXITCODE -ne 0) { throw "dumpbin failed for $($exe.Name)" }
+            $imports
+            if ($imports -match '(?i)\b(vcruntime[\w]*|msvcp[\w]*|msvcr[\w]*|ucrtbase[d]?|api-ms-win-crt-[\w-]+)\.dll\b') {
+              throw "$($exe.Name) imports a dynamic MSVC/UCRT runtime"
+            }
+          }
+
+      - name: Upload install folder
+        uses: actions/upload-artifact@v7
+        with:
+          name: tilp_${{ matrix.os }}-${{ matrix.arch }}-${{ matrix.gtkver }}
+          path: ${{ github.workspace }}/tilp.build/Win-${{ matrix.arch }}-${{ matrix.gtkver }}/prefix
+
+      # Keep successfully built dependencies even when a later build step fails.
+      - name: Save vcpkg binary cache
+        if: always() && steps.vcpkg-cache.outputs.cache-primary-key != ''
+        uses: actions/cache/save@caa296126883cff596d87d8935842f9db880ef25 # v5
+        with:
+          path: ${{ env.VCPKG_DEFAULT_BINARY_CACHE }}
+          key: ${{ steps.vcpkg-cache.outputs.cache-primary-key }}

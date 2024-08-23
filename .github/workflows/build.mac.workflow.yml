@@ -2,84 +2,117 @@ name: Build macOS
 
 on:
   push:
-    branches: [ master, gtk3 ]
+    branches: [ master, gtk3, fullvcpkg ]
   pull_request:
-    branches: [ master, gtk3 ]
+    branches: [ master, gtk3, fullvcpkg ]
   release:
     types: [published]
 
 jobs:
   build:
-    name: "Build: ${{ matrix.os }} - GTK+${{ matrix.gtkver }} - static ${{ matrix.statictype }}"
+    name: "Build: ${{ matrix.arch }} ${{ matrix.os }} - ${{ matrix.gtkver }}"
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
       matrix:
-        os: [macos-14, macos-15-intel]
-        statictype: [OFF,ON]
-        gtkver: [2,3]
+        os: [macos-15-intel, macos-26]
+        gtkver: [GTK2, GTK3]
+        config: [Release]
         include:
-          - gtkver: 2
-            gtk3: OFF
-            gtkdep: "gtk+"
-          - gtkver: 3
-            gtk3: ON
-            gtkdep: "gtk+3"
+          - os: macos-15-intel
+            arch: x64
+          - os: macos-26
+            arch: arm64
+
+    env:
+      SCCACHE_GHA_ENABLED: "true"
+      # Override run-vcpkg's default, which still selects the removed x-gha backend.
+      VCPKG_BINARY_SOURCES: clear;default,readwrite
+      VCPKG_DEFAULT_BINARY_CACHE: ${{ github.workspace }}/.vcpkg-binary-cache
+      # vcpkg sanitizes the Windows environment before configuring ports.
+      VCPKG_KEEP_ENV_VARS: CMAKE_C_COMPILER_LAUNCHER;CMAKE_CXX_COMPILER_LAUNCHER;SCCACHE_GHA_ENABLED;ACTIONS_RESULTS_URL;ACTIONS_RUNTIME_TOKEN;ACTIONS_CACHE_SERVICE_V2
 
     steps:
-    - name: Checkout Git Repo
-      uses: actions/checkout@v3
-      with:
-        submodules: 'recursive'
+      - name: Checkout Git Repo
+        uses: actions/checkout@v7
+        with:
+          submodules: 'recursive'
 
-    - name: Install dependencies
-      run: |
-        set -e
-        brew install cmake ninja gettext libarchive glib libusb libiconv intltool expat bzip2 zlib ${{ matrix.gtkdep }} intltool
+      - name: Resolve pushed tilibs experimental2 tip
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python3 .github/scripts/update-tilibs-port.py
 
-    # Workaround!
-    # libarchive.pc now has (lib)iconv in Requires.private, which doesn't work here
-    # See https://github.com/libarchive/libarchive/pull/1813 and other issues
-    - name: Fix libarchive pkg-config file
-      run: |
-        sudo sed -i '' -E '/^Requires.private: (lib)?iconv/d' $(brew --prefix libarchive)/lib/pkgconfig/libarchive.pc
+      - name: Install dependencies
+        run: |
+          brew install automake autoconf autoconf-archive libtool gtk+ intltool python-setuptools
+          pip install -U setuptools
 
-    - name: Get and build and install tilibs
-      run: |
-        set -e
-        cd /tmp
-        mkdir lpg_install
-        git clone --depth 1 -b experimental2 https://github.com/debrouxl/tilibs
-        cd tilibs
-        mkdir build && cd build
-        export PKG_CONFIG_PATH="$(brew --prefix libarchive)/lib/pkgconfig/:$PKG_CONFIG_PATH"
-        cmake -GNinja -DCMAKE_BUILD_TYPE=Release -DTRY_STATIC_LIBS=${{ matrix.statictype }} -DCMAKE_INSTALL_PREFIX=/tmp/lpg_install ..
-        cmake --build . --target all
-        cmake --build . --target install
+      - name: Generate tilp+gfm i18n resources
+        run: |
+          cd  gfm/trunk/po; intltool-update --pot; intltool-update fr; cd ../../..
+          cd tilp/trunk/po; intltool-update --pot; intltool-update fr; intltool-update de; cd ../../..
 
-    - name: Generate tilp+gfm i18n resources
-      run: |
-        cd  gfm/trunk/po; intltool-update --pot; intltool-update fr; cd ../../..
-        cd tilp/trunk/po; intltool-update --pot; intltool-update fr; intltool-update de; cd ../../..
+      - name: Install latest CMake
+        uses: lukka/get-cmake@16e8153a8b4918849d92aad131befe67a3705daa # latest as of 2026-11-15
 
-    - name: Build tilp+gfm
-      run: |
-        set -e
-        mkdir build && cd build
-        export PKG_CONFIG_PATH="/tmp/lpg_install/lib/pkgconfig:$(brew --prefix libarchive)/lib/pkgconfig/:$PKG_CONFIG_PATH"
-        cmake -GNinja -DCMAKE_BUILD_TYPE=Release -DTRY_STATIC_LIBS=${{ matrix.statictype }} -DBUILD_USING_GTK3=${{ matrix.gtk3 }} -DCMAKE_INSTALL_PREFIX=/tmp/lpg_install ..
-        cmake --build . --target all
+      - name: Set up sccache
+        uses: mozilla-actions/sccache-action@fc920bf0ec8de6ee65d409111f7ec508035751ba # latest as of 2026-11-15
+        with:
+          version: v0.19.0
 
-    - name: Install tilp+gfm
-      run: |
-        cd build
-        cmake --build . --target install
+      - name: Configure compiler cache
+        shell: bash
+        run: |
+          # CMake reads these for both the application and CMake-based vcpkg ports.
+          echo "CMAKE_C_COMPILER_LAUNCHER=$SCCACHE_PATH" >> "$GITHUB_ENV"
+          echo "CMAKE_CXX_COMPILER_LAUNCHER=$SCCACHE_PATH" >> "$GITHUB_ENV"
+          "$SCCACHE_PATH" --start-server
+          mkdir -p .vcpkg-binary-cache
 
-    - name: Prepare install folder for upload
-      run: mv /tmp/lpg_install /tmp/tilp_gfm_mac${{ runner.arch }}_gtk${{ matrix.gtkver }}_static${{ matrix.statictype }}
+      - name: Restore vcpkg binary cache
+        id: vcpkg-cache
+        uses: actions/cache/restore@caa296126883cff596d87d8935842f9db880ef25 # v5
+        with:
+          path: ${{ env.VCPKG_DEFAULT_BINARY_CACHE }}
+          key: vcpkg-v1-${{ matrix.os }}-${{ matrix.arch }}-${{ hashFiles('vcpkg.json', 'CMakePresets.json', '.cmake/**') }}-${{ matrix.gtkver }}-${{ github.run_id }}-${{ github.run_attempt }}
+          restore-keys: |
+            vcpkg-v1-${{ matrix.os }}-${{ matrix.arch }}-${{ hashFiles('vcpkg.json', 'CMakePresets.json', '.cmake/**') }}-
+            vcpkg-v1-${{ matrix.os }}-${{ matrix.arch }}-
 
-    - name: Upload install folder
-      uses: actions/upload-artifact@v4
-      with:
-        name: tilp_gfm_mac${{ runner.arch }}_gtk${{ matrix.gtkver }}_static${{ matrix.statictype }}
-        path: /tmp/tilp_gfm_mac${{ runner.arch }}_gtk${{ matrix.gtkver }}_static${{ matrix.statictype }}/
+      - name: Restore artifacts, or setup vcpkg (do not install any package)
+        uses: lukka/run-vcpkg@d4e6061274d7ffb3e33694898aed9fb6ece66310 # latest as of 2026-11-15
+        with:
+          binaryCachePath: ${{ github.workspace }}/.vcpkg-binary-cache
+
+      - name: create install folder
+        run: |
+          mkdir -p "${{ github.workspace }}/tilp.build/Mac-${{ matrix.arch }}-${{ matrix.gtkver }}/prefix"
+
+      - name: Build and install tilp (${{ matrix.gtkver }}) and gfm ${{ matrix.config }} on Mac ${{ matrix.arch }}
+        uses: lukka/run-cmake@338027a0ca347414b3abaa50a883bdc2b91d1812 # latest as of 2026-11-15
+        with:
+          cmakeListsTxtPath: '${{ github.workspace }}/CMakeLists.txt'
+          configurePreset: 'Mac-${{ matrix.arch }}-${{ matrix.gtkver }}'
+          configurePresetAdditionalArgs: "['-DDEPS_RELEASE_ONLY=ON']"
+          buildPreset: 'Mac-${{ matrix.arch }}-${{ matrix.gtkver }}-${{ matrix.config }}'
+          buildPresetAdditionalArgs: "['--target', 'install']"
+        env:
+          CMAKE_INSTALL_PREFIX_OVERRIDE: ${{ github.workspace }}/tilp.build/Mac-${{ matrix.arch }}-${{ matrix.gtkver }}/prefix
+          VCPKG_DEFAULT_HOST_TRIPLET: ${{ matrix.arch }}-osx-release
+          VCPKG_FORCE_SYSTEM_BINARIES: 1
+
+      - name: Upload install folder
+        uses: actions/upload-artifact@v7
+        with:
+          name: tilp_${{ matrix.os }}-${{ matrix.arch }}-${{ matrix.gtkver }}
+          path: ${{ github.workspace }}/tilp.build/Mac-${{ matrix.arch }}-${{ matrix.gtkver }}/prefix
+
+      # Keep successfully built dependencies even when a later build step fails.
+      - name: Save vcpkg binary cache
+        if: always() && steps.vcpkg-cache.outputs.cache-primary-key != ''
+        uses: actions/cache/save@caa296126883cff596d87d8935842f9db880ef25 # v5
+        with:
+          path: ${{ env.VCPKG_DEFAULT_BINARY_CACHE }}
+          key: ${{ steps.vcpkg-cache.outputs.cache-primary-key }}

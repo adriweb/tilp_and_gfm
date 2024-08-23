@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.12)
+cmake_minimum_required(VERSION 3.15)
 
 project(tilp2
         VERSION     1.19
@@ -50,15 +50,38 @@ set(SRC_FILES
         src/toolbar.c)
 
 add_executable(tilp2 ${SRC_FILES})
+# tilibs contains C++ objects even though this executable has C sources.
+set_target_properties(tilp2 PROPERTIES LINKER_LANGUAGE CXX)
+tilp_configure_bundled_target(tilp2)
+
+include(CheckIPOSupported)
+check_ipo_supported(RESULT lto_supported OUTPUT error)
+if(lto_supported)
+    set_target_properties(tilp2 PROPERTIES
+            INTERPROCEDURAL_OPTIMIZATION_DEBUG FALSE
+            INTERPROCEDURAL_OPTIMIZATION_RELEASE TRUE
+            INTERPROCEDURAL_OPTIMIZATION_RELWITHDEBINFO TRUE
+    )
+else()
+    message(STATUS "IPO/LTO not supported: <${error}>")
+endif()
 
 if(WIN32)
     target_include_directories(tilp2 PRIVATE "build/msvc")
 endif()
 
-option(BUILD_USING_GTK3 "Build using GTK+3 instead of GTK+2" OFF)
-if(BUILD_USING_GTK3)
-    set(GTK_DEP "gtk+-3.0")
-    pkg_get_variable(GTK3_PREFIX gtk+-3.0 prefix)
+# Static archives must precede the libraries that satisfy their references.
+target_include_directories(tilp2 PRIVATE ${TILIBS_INCLUDES_DIR})
+target_link_libraries(tilp2 PRIVATE ${LIBTICALCS2} ${LIBTIFILES2} ${LIBTICABLES2} ${LIBTICONV} ${TILIBS_PLATFORM_LIBRARIES})
+
+# External deps
+option(USE_GTK2 "Build with GTK+2 instead of GTK+3" OFF)
+if(USE_GTK2)
+    pkg_check_modules(GTK2 REQUIRED IMPORTED_TARGET gtk+-2.0>=2.10)
+    target_link_libraries(tilp2 PRIVATE PkgConfig::GTK2)
+else()
+    pkg_check_modules(GTK3 REQUIRED IMPORTED_TARGET gtk+-3.0)
+    target_link_libraries(tilp2 PRIVATE PkgConfig::GTK3)
 
     # GTK's file chooser uses GSettings at runtime. Static linking does not
     # embed the schema database, so portable installations need a compiled
@@ -106,42 +129,29 @@ if(BUILD_USING_GTK3)
         install(FILES ${GTK3_SCHEMA_FILES} "${GTK3_COMPILED_SCHEMA}"
                 DESTINATION "${TILP_GSETTINGS_SCHEMA_SUBDIR}")
     endif()
+endif()
+
+if(WIN32)
+    find_library(LIBUSB0 NAMES libusb0.lib usb0 REQUIRED)
+    target_link_libraries(tilp2 PRIVATE ${LIBUSB0})
 else()
-    set(GTK_DEP "gtk+-2.0")
+    pkg_check_modules(LibUSB REQUIRED IMPORTED_TARGET libusb-1.0>=1.0.16)
+    target_link_libraries(tilp2 PRIVATE PkgConfig::LibUSB)
 endif()
 
-# External deps
-pkg_check_modules(DEPS REQUIRED ${GTK_DEP} glib-2.0 ticonv tifiles2 ticables2 ticalcs2 zlib)
-if(TRY_STATIC_LIBS AND WIN32)
-    list(APPEND DEPS_LIBRARIES "libusb0")
-    list(APPEND DEPS_STATIC_LIBRARIES "libusb0")
-endif()
-
-try_static_libs_if_needed()
+pkg_check_modules(glib REQUIRED IMPORTED_TARGET glib-2.0)
+find_package(ZLIB REQUIRED) # for libtifiles
+find_package(LibArchive REQUIRED) # for libticables
+target_link_libraries(tilp2 PRIVATE ZLIB::ZLIB PkgConfig::glib LibArchive::LibArchive)
 
 # Defines
 set(SHAREDIR  "${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_DATAROOTDIR}/${PROJECT_NAME}")
 target_compile_definitions(tilp2 PRIVATE PACKAGE="${PROJECT_NAME}" VERSION="${PROJECT_VERSION}" SHARE_DIR="${SHAREDIR}")
 
-# CFLAGS
-target_compile_options(tilp2 PRIVATE ${DEPS_CFLAGS})
-
-# Link-related properties, flags...
-if(TRY_STATIC_LIBS)
-    target_compile_options(tilp2 PRIVATE ${DEPS_STATIC_CFLAGS})
-    target_link_directories(tilp2 PRIVATE ${TRY_STATIC_DEPS_LIBSDIRS})
-    target_link_libraries(tilp2 ${TRY_STATIC_DEPS_LDFLAGS_OTHER} ${TRY_STATIC_DEPS_LIBS})
-    if(Iconv_FOUND AND NOT Iconv_IS_BUILT_IN)
-        target_include_directories(tilp2 PRIVATE ${Iconv_INCLUDE_DIRS})
-        if(Iconv_LIBRARY_DIRS)
-            target_link_directories(tilp2 PRIVATE ${Iconv_LIBRARY_DIRS})
-        endif()
-        target_link_libraries(tilp2 ${Iconv_LIBRARIES})
-    endif()
-else()
-    target_compile_options(tilp2 PRIVATE ${DEPS_CFLAGS})
-    target_link_directories(tilp2 PRIVATE ${DEPS_LIBRARY_DIRS})
-    target_link_libraries(tilp2 ${DEPS_LDFLAGS_OTHER} ${DEPS_LIBRARIES})
+if(APPLE)
+    find_library(UNIFORMTYPEIDENTIFIERS_FRAMEWORK UniformTypeIdentifiers REQUIRED)
+    target_link_libraries(tilp2 PRIVATE "-Wl,-framework,CoreVideo -Wl,-framework,IOSurface -Wl,-framework,QuartzCore")
+    target_link_libraries(tilp2 PRIVATE ${UNIFORMTYPEIDENTIFIERS_FRAMEWORK})
 endif()
 
 if(APPLE OR UNIX)

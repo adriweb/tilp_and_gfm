@@ -65,8 +65,18 @@ TilpInstPaths inst_paths =
 #if defined(__LINUX__) || defined(__BSD__) || defined(__MACOSX__)
 static void init_linux_paths(void)
 {
+#ifdef RELOCATABLE_INSTALL
+	gchar *executable_path = g_file_read_link("/proc/self/exe", NULL);
+	gchar *bin_dir = executable_path ? g_path_get_dirname(executable_path) : NULL;
+	gchar *prefix_dir = bin_dir ? g_path_get_dirname(bin_dir) : NULL;
+
+	inst_paths.base_dir = prefix_dir
+	    ? g_strconcat(prefix_dir, G_DIR_SEPARATOR_S, SHARE_SUBDIR, G_DIR_SEPARATOR_S, NULL)
+	    : g_strconcat(SHARE_DIR, G_DIR_SEPARATOR_S, NULL);
+#else
 	inst_paths.base_dir =
 	    g_strconcat(SHARE_DIR, G_DIR_SEPARATOR_S, NULL);
+#endif
 	inst_paths.pixmap_dir =
 	    g_strconcat(inst_paths.base_dir, "pixmaps/", NULL);
 	inst_paths.icon_dir =
@@ -83,8 +93,19 @@ static void init_linux_paths(void)
 		g_strdup(g_get_home_dir());
 
 #ifdef ENABLE_NLS
+#ifdef RELOCATABLE_INSTALL
+	inst_paths.locale_dir = prefix_dir
+	    ? g_strconcat(prefix_dir, G_DIR_SEPARATOR_S, LOCALE_SUBDIR, G_DIR_SEPARATOR_S, NULL)
+	    : g_strconcat(LOCALEDIR, "/", NULL);
+#else
 	inst_paths.locale_dir = g_strconcat(LOCALEDIR, "/", NULL);
+#endif
 #endif				/*  */
+#ifdef RELOCATABLE_INSTALL
+	g_free(prefix_dir);
+	g_free(bin_dir);
+	g_free(executable_path);
+#endif
 }
 #endif				/*  */
 
