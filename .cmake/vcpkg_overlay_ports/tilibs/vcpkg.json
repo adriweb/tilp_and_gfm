@@ -1,0 +1,46 @@
+{
+  "name": "tilibs",
+  "version-string": "1.0",
+  "homepage": "https://github.com/debrouxl/tilibs",
+  "description": "libs to transfer things from/to TI graphing calculators",
+  "dependencies": [
+    {
+      "name": "vcpkg-cmake",
+      "host": true
+    },
+    {
+      "name": "vcpkg-cmake-config",
+      "host": true
+    },
+    "pkgconf",
+    {
+      "name": "pkgconf",
+      "host": true
+    },
+    "libiconv",
+    "zlib",
+    {
+      "name": "libarchive",
+      "default-features": false
+    },
+    "getopt",
+    {
+      "name": "libusb",
+      "platform": "!windows"
+    },
+    {
+      "name": "libusb-win32",
+      "platform": "windows"
+    },
+    "glib",
+    {
+      "name": "gettext",
+      "features": [ "tools" ]
+    },
+    {
+      "name": "gettext",
+      "features": [ "tools" ],
+      "host": true
+    }
+  ]
+}

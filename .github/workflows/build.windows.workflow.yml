@@ -2,89 +2,63 @@ name: Build Windows
 
 on:
   push:
-    branches: [ master, gtk3 ]
+    branches: [ master, gtk3, fullvcpkg ]
   pull_request:
-    branches: [ master, gtk3 ]
+    branches: [ master, gtk3, fullvcpkg ]
   release:
     types: [published]
 
 jobs:
   build:
-    name: "Build target: ${{ matrix.arch }}-${{ matrix.config }}"
-    runs-on: windows-latest
+    name: "Build: ${{ matrix.arch }} ${{ matrix.os }} - ${{ matrix.gtkver }}"
+    runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
       matrix:
-        arch: [x64]
-        config: [ReleaseDynamic, ReleaseStatic]
-        include:
-          - arch: x64
-            arch_name: 64-bit
-            tilibsdeps: tilibs_windows-2022-x64
+        os: [windows-2022]
+        gtkver: [GTK3]
+        arch: [x86,x64]
+        config: [Release]
+
     steps:
-    - name: Checkout Git Repo
-      uses: actions/checkout@v3
-      with:
-        submodules: 'recursive'
+      - name: Remove Perl Strawberry installation
+        # Removes conflicting headers from include paths
+        run: |
+          Remove-Item -Recurse -Force C:/Strawberry
 
-    - name: Install latest CMake
-      uses: lukka/get-cmake@a70f1cfa1857a3eecfe0d34962269e1b1e8be56c # latest as of 2024-08-08
+      - name: Checkout Git Repo
+        uses: actions/checkout@v4
+        with:
+          submodules: 'recursive'
 
-    - name: Restore artifacts, or setup vcpkg (do not install any package)
-      uses: lukka/run-vcpkg@d87e7fac99f22776a4973d7e413921ea254c1fc9 # latest as of 2024-08-08
-      with:
-        vcpkgGitCommitId: 'a993be073c6baea8674117f3eaed6e2d2486aaae' # latest as of 2024-08-20
-        vcpkgDirectory: C:/vcpkg
-      env:
-        VCPKG_ROOT: C:/vcpkg
+      - name: Install latest CMake
+        uses: lukka/get-cmake@a70f1cfa1857a3eecfe0d34962269e1b1e8be56c # latest as of 2024-08-08
 
-    - name: Create prefix folder
-      shell: cmd
-      run: mkdir prefix
+      - name: Restore artifacts, or setup vcpkg (do not install any package)
+        uses: lukka/run-vcpkg@d87e7fac99f22776a4973d7e413921ea254c1fc9 # latest as of 2024-08-08
+        with:
+          vcpkgDirectory: C:/vcpkg
 
-    - name: TEMP create tilibs folder stuff where they are expected
-      shell: cmd
-      run: mkdir D:\a\tilibs\tilibs\tilibs.build\Win-${{ matrix.arch }}
+      - name: create install folder
+        run: |
+          mkdir "${{ github.workspace }}/tilp.build/Win-${{ matrix.arch }}-${{ matrix.gtkver }}/prefix"
 
-    - name: Get tilibs artifact
-      id: download-artifact
-      uses: dawidd6/action-download-artifact@268677152d06ba59fcec7a7f0b5d961b6ccd7e1e # latest as of 2023-11-12
-      with:
-        repo: debrouxl/tilibs
-        branch: experimental2
-        workflow: build.windows.workflow.yml
-        workflow_conclusion: success
-        github_token: ${{secrets.GITHUB_TOKEN}}
-        path: 'D:\a\tilibs\tilibs\tilibs.build\Win-${{ matrix.arch }}'
+      - name: Build and install tilp (${{ matrix.gtkver }}) and gfm ${{ matrix.config }} on Windows ${{ matrix.arch }}
+        uses: lukka/run-cmake@4b1adc1944be8367be9f4e08303ce49918db8e3c # latest as of 2024-08-08
+        with:
+          cmakeListsTxtPath: '${{ github.workspace }}/CMakeLists.txt'
+          configurePreset: 'Win-${{ matrix.arch }}-${{ matrix.gtkver }}'
+          configurePresetAdditionalArgs: "['-DDEPS_RELEASE_ONLY=ON']"
+          buildPreset: 'Win-${{ matrix.arch }}-${{ matrix.gtkver }}-${{ matrix.config }}'
+          buildPresetAdditionalArgs: "['--target', 'install']"
+        env:
+          CMAKE_INSTALL_PREFIX_OVERRIDE: ${{ github.workspace }}/tilp.build/Win-${{ matrix.arch }}-${{ matrix.gtkver }}/prefix
+          VCPKG_DEFAULT_TRIPLET: ${{ matrix.arch }}-windows
+          VCPKG_DEFAULT_HOST_TRIPLET: x64-windows-static-release
+          VCPKG_FORCE_SYSTEM_BINARIES: 1
 
-    - name: TEMP move tilibs stuff where they are expected
-      shell: cmd
-      run: rename "D:\a\tilibs\tilibs\tilibs.build\Win-${{ matrix.arch }}\${{ matrix.tilibsdeps }}" "prefix"
-
-    - name: Build tilp ${{ matrix.config }} on Windows ${{ matrix.arch_name }}
-      uses: lukka/run-cmake@4b1adc1944be8367be9f4e08303ce49918db8e3c # latest as of 2024-08-08
-      with:
-        cmakeListsTxtPath: '${{ github.workspace }}/CMakeLists.txt'
-        configurePreset: '${{ matrix.arch }}-${{ matrix.config }}'
-        buildPreset: '${{ matrix.arch }}-${{ matrix.config }}'
-      env:
-        VCPKG_FORCE_SYSTEM_BINARIES: 1
-        CMAKE_INSTALL_PREFIX_OVERRIDE: '${{ github.workspace }}/prefix'
-        VCPKG_ROOT: C:/vcpkg
-
-    - name: Install tilp
-      uses: lukka/run-cmake@4b1adc1944be8367be9f4e08303ce49918db8e3c # latest as of 2024-08-08
-      with:
-        cmakeListsTxtPath: '${{ github.workspace }}/CMakeLists.txt'
-        buildPreset: '${{ matrix.arch }}-${{ matrix.config }}'
-        buildPresetAdditionalArgs: "['--target install']"
-
-    - name: Prepare install folder for upload
-      shell: cmd
-      run: rename prefix tilp_windows_gtk3_${{ matrix.config }}
-
-    - name: Upload install folder
-      uses: actions/upload-artifact@v4
-      with:
-        name: tilp_windows_gtk3_${{ matrix.config }}
-        path: tilp_windows_gtk3_${{ matrix.config }}
+      - name: Upload install folder
+        uses: actions/upload-artifact@v4
+        with:
+          name: tilp_${{ matrix.os }}-${{ matrix.arch }}-${{ matrix.gtkver }}
+          path: ${{ github.workspace }}/tilp.build/Win-${{ matrix.arch }}-${{ matrix.gtkver }}/prefix

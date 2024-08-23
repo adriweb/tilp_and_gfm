@@ -5,14 +5,18 @@
   "description": "TILP (formerly GtkTiLink) can transfer data between TI graphing calculators and a computer",
   "dependencies": [
     "pkgconf",
-    {
-      "name": "libarchive",
-      "default-features": false
-    },
-    "libusb-win32",
     "glib",
-    "gettext",
-    "gtk3"
+    {
+      "name": "gettext",
+      "features": [ "tools" ]
+    },
+    {
+      "name": "gdk-pixbuf",
+      "features": [ "others" ]
+    },
+    "gtk2",
+    "gtk3",
+    "tilibs"
   ],
   "builtin-baseline": "a993be073c6baea8674117f3eaed6e2d2486aaae"
 }

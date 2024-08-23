@@ -51,49 +51,63 @@ set(SRC_FILES
 
 add_executable(tilp2 ${SRC_FILES})
 
+include(CheckIPOSupported)
+check_ipo_supported(RESULT lto_supported OUTPUT error)
+if(lto_supported)
+    set_target_properties(tilp2 PROPERTIES
+            INTERPROCEDURAL_OPTIMIZATION_DEBUG FALSE
+            INTERPROCEDURAL_OPTIMIZATION_RELEASE TRUE
+            INTERPROCEDURAL_OPTIMIZATION_RELWITHDEBINFO TRUE
+    )
+else()
+    message(STATUS "IPO/LTO not supported: <${error}>")
+endif()
+
 if(WIN32)
     target_include_directories(tilp2 PRIVATE "build/msvc")
 endif()
 
-option(BUILD_USING_GTK3 "Build using GTK+3 instead of GTK+2" OFF)
-if(BUILD_USING_GTK3)
-    set(GTK_DEP "gtk+-3.0")
-else()
-    set(GTK_DEP "gtk+-2.0")
-endif()
-
 # External deps
-pkg_check_modules(DEPS REQUIRED ${GTK_DEP} glib-2.0 ticonv tifiles2 ticables2 ticalcs2 zlib)
-if(TRY_STATIC_LIBS AND WIN32)
-    list(APPEND DEPS_LIBRARIES "libusb0")
-    list(APPEND DEPS_STATIC_LIBRARIES "libusb0")
+option(USE_GTK2 "Build with GTK+2 instead of GTK+3" OFF)
+if(USE_GTK2)
+    find_package(GTK2 2.10 REQUIRED gtk)
+    find_package(TIFF REQUIRED) # from gtk deps
+    find_package(PNG REQUIRED) # from gtk deps
+    pkg_check_modules(LibFFI REQUIRED IMPORTED_TARGET libffi)
+    target_include_directories(tilp2 PRIVATE ${GTK2_INCLUDE_DIRS})
+    target_link_libraries(tilp2 PRIVATE ${GTK2_LIBRARIES} PNG::PNG TIFF::TIFF PkgConfig::LibFFI)
+    if (APPLE)
+        target_link_libraries(tilp2 PRIVATE "resolv") # for gio for gtk...
+    endif()
+else()
+    pkg_check_modules(GTK3 REQUIRED IMPORTED_TARGET gtk+-3.0)
+    target_link_libraries(tilp2 PRIVATE PkgConfig::GTK3)
 endif()
 
-try_static_libs_if_needed()
+if(WIN32)
+    find_library(LIBUSB0 NAMES libusb0.lib usb0 REQUIRED)
+    target_link_libraries(tilp2 PRIVATE ${LIBUSB0})
+else()
+    pkg_check_modules(LibUSB REQUIRED IMPORTED_TARGET libusb-1.0>=1.0.16)
+    target_link_libraries(tilp2 PRIVATE PkgConfig::LibUSB)
+endif()
+
+pkg_check_modules(glib REQUIRED IMPORTED_TARGET glib-2.0)
+find_package(ZLIB REQUIRED) # for libtifiles
+find_package(LibArchive REQUIRED) # for libticables
+target_link_libraries(tilp2 PRIVATE ZLIB::ZLIB PkgConfig::glib LibArchive::LibArchive)
 
 # Defines
 set(SHAREDIR  "${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_DATAROOTDIR}/${PROJECT_NAME}")
 target_compile_definitions(tilp2 PRIVATE PACKAGE="${PROJECT_NAME}" VERSION="${PROJECT_VERSION}" SHARE_DIR="${SHAREDIR}")
 
-# CFLAGS
-target_compile_options(tilp2 PRIVATE ${DEPS_CFLAGS})
+target_include_directories(tilp2 PRIVATE ${TILIBS_INCLUDES_DIR})
+target_link_libraries(tilp2 PRIVATE ${LIBTICONV} ${LIBTIFILES2} ${LIBTICABLES2} ${LIBTICALCS2})
 
-# Link-related properties, flags...
-if(TRY_STATIC_LIBS)
-    target_compile_options(tilp2 PRIVATE ${DEPS_STATIC_CFLAGS})
-    target_link_directories(tilp2 PRIVATE ${TRY_STATIC_DEPS_LIBSDIRS})
-    target_link_libraries(tilp2 ${TRY_STATIC_DEPS_LDFLAGS_OTHER} ${TRY_STATIC_DEPS_LIBS})
-    if(Iconv_FOUND AND NOT Iconv_IS_BUILT_IN)
-        target_include_directories(tilp2 PRIVATE ${Iconv_INCLUDE_DIRS})
-        if(Iconv_LIBRARY_DIRS)
-            target_link_directories(tilp2 PRIVATE ${Iconv_LIBRARY_DIRS})
-        endif()
-        target_link_libraries(tilp2 ${Iconv_LIBRARIES})
-    endif()
-else()
-    target_compile_options(tilp2 PRIVATE ${DEPS_CFLAGS})
-    target_link_directories(tilp2 PRIVATE ${DEPS_LIBRARY_DIRS})
-    target_link_libraries(tilp2 ${DEPS_LDFLAGS_OTHER} ${DEPS_LIBRARIES})
+if(APPLE)
+    find_library(UNIFORMTYPEIDENTIFIERS_FRAMEWORK UniformTypeIdentifiers REQUIRED)
+    target_link_libraries(tilp2 PRIVATE "-Wl,-framework,CoreVideo -Wl,-framework,IOSurface -Wl,-framework,QuartzCore")
+    target_link_libraries(tilp2 PRIVATE ${UNIFORMTYPEIDENTIFIERS_FRAMEWORK})
 endif()
 
 if(APPLE OR UNIX)

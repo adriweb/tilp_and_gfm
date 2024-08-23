@@ -2,82 +2,77 @@ name: Build Linux
 
 on:
   push:
-    branches: [ master, gtk3 ]
+    branches: [ master, gtk3, fullvcpkg ]
   pull_request:
-    branches: [ master, gtk3 ]
+    branches: [ master, gtk3, fullvcpkg ]
   release:
     types: [published]
 
 jobs:
   build:
-    name: "Build: ${{ matrix.os }} - GTK+${{ matrix.gtkver }} - static ${{ matrix.statictype }}"
+    name: "Build: ${{ matrix.arch }} ${{ matrix.os }} - ${{ matrix.gtkver }} - ${{ matrix.upload_suffix }}"
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
       matrix:
         os: [ubuntu-22.04, ubuntu-24.04]
-        statictype: [OFF,ON]
-        gtkver: [2,3]
+        arch: [x64]
+        config: [Release]
+        gtkver: [GTK2, GTK3]
+        statictype: [ON, OFF]
         include:
-          - gtkver: 2
-            gtk3: OFF
-            gtkdep: "libgtk2.0-dev"
-          - gtkver: 3
-            gtk3: ON
-            gtkdep: "libgtk-3-dev"
+          - statictype: ON
+            preset_suffix: ""
+            upload_suffix: static
+          - statictype: OFF
+            preset_suffix: "-Dynamic"
+            upload_suffix: shared
 
     steps:
-    - name: Checkout Git Repo
-      uses: actions/checkout@v3
-      with:
-        submodules: 'recursive'
+      - name: Checkout Git Repo
+        uses: actions/checkout@v4
+        with:
+          submodules: 'recursive'
 
-    - name: workaround for default apt mirror connectivity issues
-      run: |
-        sudo sed -i 's/azure\.//' /etc/apt/sources.list
+      - name: Install dependencies
+        run: |
+          set -e
+          sudo apt install -y libgtk2.0-dev libgtk-3-dev libudev-dev autoconf automake libtool pkg-config libxi-dev libxtst-dev libx11-dev libgles2-mesa-dev intltool
 
-    - name: Install dependencies
-      run: |
-        set -e
-        sudo add-apt-repository universe
-        sudo apt update
-        sudo apt install -y cmake ninja-build libarchive-dev libzstd-dev zlib1g-dev libusb-1.0-0-dev libglib2.0-dev gettext nettle-dev libacl1-dev liblzma-dev liblz4-dev libudev-dev libc6-dev libsystemd-dev ${{ matrix.gtkdep }} libglade2-dev intltool
+      - name: Generate tilp+gfm i18n resources
+        run: |
+          cd  gfm/trunk/po; intltool-update --pot; intltool-update fr; cd ../../..
+          cd tilp/trunk/po; intltool-update --pot; intltool-update fr; intltool-update de; cd ../../..
 
-    - name: Get and build and install tilibs
-      run: |
-        set -e
-        cd /tmp
-        mkdir lpg_install
-        git clone --depth 1 -b experimental2 https://github.com/debrouxl/tilibs
-        cd tilibs
-        mkdir build && cd build
-        cmake -GNinja -DCMAKE_BUILD_TYPE=Release -DTRY_STATIC_LIBS=${{ matrix.statictype }} -DCMAKE_INSTALL_PREFIX=/tmp/lpg_install ..
-        cmake --build . --target all
-        cmake --build . --target install
+      - name: workaround for default apt mirror connectivity issues
+        run: |
+          sudo sed -i 's/azure\.//' /etc/apt/sources.list
 
-    - name: Generate tilp+gfm i18n resources
-      run: |
-        cd  gfm/trunk/po; intltool-update --pot; intltool-update fr; cd ../../..
-        cd tilp/trunk/po; intltool-update --pot; intltool-update fr; intltool-update de; cd ../../..
+      - name: Install latest CMake
+        uses: lukka/get-cmake@a70f1cfa1857a3eecfe0d34962269e1b1e8be56c # latest as of 2024-08-08
 
-    - name: Build tilp+gfm
-      run: |
-        set -e
-        mkdir build && cd build
-        export PKG_CONFIG_PATH="/tmp/lpg_install/lib/pkgconfig:$PKG_CONFIG_PATH"
-        cmake -GNinja -DCMAKE_BUILD_TYPE=Release -DTRY_STATIC_LIBS=${{ matrix.statictype }} -DBUILD_USING_GTK3=${{ matrix.gtk3 }} -DCMAKE_INSTALL_PREFIX=/tmp/lpg_install ..
-        cmake --build . --target all
+      - name: Restore artifacts, or setup vcpkg (do not install any package)
+        uses: lukka/run-vcpkg@d87e7fac99f22776a4973d7e413921ea254c1fc9 # latest as of 2024-08-08
 
-    - name: Install tilp+gfm
-      run: |
-        cd build
-        cmake --build . --target install
+      - name: create install folder
+        run: |
+          mkdir -p "${{ github.workspace }}/tilp.build/Linux-${{ matrix.arch }}-${{ matrix.gtkver }}/prefix"
 
-    - name: Prepare install folder for upload
-      run: mv /tmp/lpg_install /tmp/tilp_gfm_linux_gtk${{ matrix.gtkver }}_static${{ matrix.statictype }}
+      - name: Build and install tilp (${{ matrix.gtkver }}) and gfm ${{ matrix.config }} on Linux ${{ matrix.arch }}
+        uses: lukka/run-cmake@4b1adc1944be8367be9f4e08303ce49918db8e3c # latest as of 2024-08-08
+        with:
+          cmakeListsTxtPath: '${{ github.workspace }}/CMakeLists.txt'
+          configurePreset: 'Linux-${{ matrix.arch }}-${{ matrix.gtkver }}${{ matrix.preset_suffix }}'
+          configurePresetAdditionalArgs: "['-DDEPS_RELEASE_ONLY=ON']"
+          buildPreset: 'Linux-${{ matrix.arch }}-${{ matrix.gtkver }}${{ matrix.preset_suffix }}-${{ matrix.config }}'
+          buildPresetAdditionalArgs: "['--target', 'install']"
+        env:
+          CMAKE_INSTALL_PREFIX_OVERRIDE: ${{ github.workspace }}/tilp.build/Linux-${{ matrix.arch }}-${{ matrix.gtkver }}/prefix
+          VCPKG_DEFAULT_HOST_TRIPLET: ${{ matrix.arch }}-linux-release
+          VCPKG_FORCE_SYSTEM_BINARIES: 1
 
-    - name: Upload install folder
-      uses: actions/upload-artifact@v4
-      with:
-        name: tilp_gfm_linux_gtk${{ matrix.gtkver }}_static${{ matrix.statictype }}
-        path: /tmp/tilp_gfm_linux_gtk${{ matrix.gtkver }}_static${{ matrix.statictype }}/
+      - name: Upload install folder
+        uses: actions/upload-artifact@v4
+        with:
+          name: tilp_and_gfm_${{ matrix.os }}-${{ matrix.arch }}-${{ matrix.gtkver }}_${{ matrix.upload_suffix }}Deps
+          path: ${{ github.workspace }}/tilp.build/Linux-${{ matrix.arch }}-${{ matrix.gtkver }}/prefix
