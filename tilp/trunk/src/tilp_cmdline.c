@@ -101,6 +101,12 @@ int tilp_cmdline_scan(int *argc, char ***argv)
 		g_free(cable);
 	}
 
+	if(options.calc_model && options.cable_model)
+	{
+		tilp_info(_("Calc and cable model were set, disabling auto-probing.\n"));
+		options.auto_detect = FALSE;
+	}
+
 	// look for short-options
 	if(array != NULL)
 	{
