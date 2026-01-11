@@ -32,11 +32,28 @@
 
 //#define DISABLE_UPDATE	// for testing purposes
 
+static gfloat filter[8] = { 0 };
+static gint64 rate_last_time = 0;
+static gdouble rate_last_cnt1 = 0.0;
+static gfloat rate_last_kbps = 0.0;
+
+static void reset_rate_state(void)
+{
+	int i;
+
+	rate_last_time = 0;
+	rate_last_cnt1 = 0.0;
+	rate_last_kbps = 0.0;
+	for(i = 0; i < 8; i++)
+		filter[i] = 0.0;
+}
+
 static void gtk_start(void)
 {
 	gtk_update.cnt1 = gtk_update.max1 = 0;
 	gtk_update.cnt2 = gtk_update.max2 = 0;
 	gtk_update.cnt3 = gtk_update.max3 = 0;
+	reset_rate_state();
 }
 
 static void gtk_stop(void)
@@ -44,9 +61,8 @@ static void gtk_stop(void)
 	gtk_update.cnt1 = gtk_update.max1 = 0;
 	gtk_update.cnt2 = gtk_update.max2 = 0;
 	gtk_update.cnt3 = gtk_update.max3 = 0;
+	reset_rate_state();
 }
-
-static gfloat filter[8] = { 0 };
 
 static void filter_shift(void)
 {
@@ -77,10 +93,63 @@ static gfloat filter_compute(gfloat input)
 	return (avg / 6);
 }
 
+static gfloat compute_rate_kbps(gboolean *has_rate)
+{
+	gint64 now;
+	gdouble elapsed;
+	gdouble current;
+	gdouble delta_bytes;
+
+#if GLIB_CHECK_VERSION(2, 28, 0)
+	now = g_get_monotonic_time();
+#else
+	{
+		GTimeVal tv;
+		g_get_current_time(&tv);
+		now = ((gint64)tv.tv_sec * 1000000) + tv.tv_usec;
+	}
+#endif
+	current = gtk_update.cnt1;
+
+	if (rate_last_time == 0)
+	{
+		rate_last_time = now;
+		rate_last_cnt1 = current;
+		if (has_rate)
+			*has_rate = FALSE;
+		return rate_last_kbps;
+	}
+
+	elapsed = (gdouble)(now - rate_last_time) / 1000000.0;
+	if (elapsed <= 0.0)
+	{
+		if (has_rate)
+			*has_rate = (rate_last_kbps > 0.0);
+		return rate_last_kbps;
+	}
+
+	delta_bytes = current - rate_last_cnt1;
+	if (delta_bytes <= 0.0)
+	{
+		if (has_rate)
+			*has_rate = (rate_last_kbps > 0.0);
+		return rate_last_kbps;
+	}
+
+	rate_last_kbps = (gfloat)((delta_bytes / elapsed) / 1024.0);
+	rate_last_time = now;
+	rate_last_cnt1 = current;
+
+	if (has_rate)
+		*has_rate = TRUE;
+	return rate_last_kbps;
+}
+
 static void refresh_pbar1(void)
 {
-	gchar buffer[32];
+	gchar buffer[64];
 	gfloat rate, avg;
+	gboolean has_rate;
 
 	if (pbar_wnd.pbar1 != NULL) 
 	{
@@ -93,11 +162,30 @@ static void refresh_pbar1(void)
 		else
 			gtk_progress_bar_pulse(GTK_PROGRESS_BAR(pbar_wnd.pbar1));
 
-		rate = gtk_update.rate;
+		rate = compute_rate_kbps(&has_rate);
 		filter_shift();
 		avg = filter_compute(rate);
 
-		g_snprintf(buffer, 32, "Rate: %1.1f Kbytes/s", avg);
+		if (has_rate && gtk_update.max1 > 0 && avg > 0.0)
+		{
+			gdouble eta = (gtk_update.max1 - gtk_update.cnt1) / (avg * 1024.0);
+			if (eta > 0.0)
+			{
+				int eta_i = (int)(eta + 0.5);
+				int eta_m = eta_i / 60;
+				int eta_s = eta_i % 60;
+				g_snprintf(buffer, sizeof(buffer),
+					"Rate: %1.1f Kbytes/s ETA: %02i:%02i", avg, eta_m, eta_s);
+			}
+			else
+			{
+				g_snprintf(buffer, sizeof(buffer), "Rate: %1.1f Kbytes/s", avg);
+			}
+		}
+		else
+		{
+			g_snprintf(buffer, sizeof(buffer), "Rate: %1.1f Kbytes/s", avg);
+		}
 		gtk_label_set_text(GTK_LABEL(pbar_wnd.label_rate), buffer);
 
 		GTK_REFRESH();
