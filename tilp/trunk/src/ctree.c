@@ -101,10 +101,15 @@ static gboolean select_func(GtkTreeSelection * selection,
 	return TRUE;
 }
 
+static void tree_path_free_func(gpointer data, gpointer user_data)
+{
+	gtk_tree_path_free(data);
+}
+
 static void tree_selection_changed(GtkTreeSelection * selection,
 				   gpointer user_data)
 {
-	GList *list;
+	GList *list, *rows;
 	GtkTreeIter iter;
 	GtkTreeModel *model;
 	GtkTreeSelection *sel;
@@ -117,8 +122,8 @@ static void tree_selection_changed(GtkTreeSelection * selection,
 	gtk_tree_selection_unselect_all(sel);
 
 	// create a new selection
-	for (list = gtk_tree_selection_get_selected_rows(selection, &model);
-	     list != NULL; list = list->next)
+	rows = gtk_tree_selection_get_selected_rows(selection, &model);
+	for (list = rows; list != NULL; list = list->next)
 	{
 		GtkTreePath *path = list->data;
 		VarEntry *ve;
@@ -136,8 +141,165 @@ static void tree_selection_changed(GtkTreeSelection * selection,
 		}
 	}
 
-	g_list_foreach(list, (GFunc)gtk_tree_path_free, NULL);
-	g_list_free(list);
+	g_list_foreach(rows, tree_path_free_func, NULL);
+	g_list_free(rows);
+}
+
+static GdkPixbuf *create_var_pixbuf(uint8_t type)
+{
+	char icon_name[256];
+	const char *icon = tifiles_vartype2icon(options.calc_model, type);
+	GdkPixbuf *pixbuf;
+
+	if (icon == NULL || *icon == '\0')
+		icon = "Unknown";
+	else if (!strcmp(icon, "PYTHON"))
+		icon = "Program";
+
+	snprintf(icon_name, sizeof(icon_name), "%s.ico", icon);
+	tilp_file_underscorize(icon_name);
+	pixbuf = create_pixbuf(icon_name);
+	if (pixbuf == NULL && strcmp(icon, "Unknown"))
+		pixbuf = create_pixbuf("Unknown.ico");
+
+	return pixbuf;
+}
+
+static void unref_pixbuf(GdkPixbuf *pixbuf)
+{
+	if (pixbuf != NULL)
+	{
+		g_object_unref(pixbuf);
+	}
+}
+
+typedef struct
+{
+	GdkPixbuf *folder;
+	GdkPixbuf *file;
+	GdkPixbuf *locked;
+	GdkPixbuf *archived;
+	uint8_t folder_type;
+} CTreeIcons;
+
+static void ctree_append_var_node(GNode *node, GtkTreeIter *parent_iter, const CTreeIcons *icons, gboolean show_node)
+{
+	GtkTreeIter iter;
+	GtkTreeIter *child_parent = parent_iter;
+	VarEntry *ve = (VarEntry *)node->data;
+	guint i;
+
+	if ((ve != NULL) && show_node)
+	{
+		gboolean is_folder = (ve->type == icons->folder_type);
+		char *utf8 = ticonv_varname_to_utf8(options.calc_model, ve->name, is_folder ? -1 : ve->type);
+		gchar *name = g_strdup(utf8);
+
+		ticonv_utf8_free(utf8);
+		if (!is_folder)
+		{
+			gchar *type = g_strdup_printf("%s", tifiles_vartype2string(options.calc_model, ve->type));
+			gchar *size = NULL;
+			GdkPixbuf *pixbuf = create_var_pixbuf(ve->type);
+
+			tilp_var_get_size(ve, &size);
+			tilp_vars_translate(name);
+			if (pixbuf == NULL)
+			{
+				pixbuf = icons->file;
+			}
+
+			gtk_tree_store_append(tree, &iter, parent_iter);
+			gtk_tree_store_set(tree, &iter,
+					   COLUMN_NAME, name,
+					   COLUMN_TYPE, type,
+					   COLUMN_SIZE, size,
+					   COLUMN_DATA, (gpointer) ve,
+					   COLUMN_ICON, pixbuf,
+					   COLUMN_FONT, FONT_NAME,
+					   -1);
+
+			switch (ve->attr)
+			{
+			case ATTRB_LOCKED:
+				gtk_tree_store_set(tree, &iter, COLUMN_ATTR, icons->locked, -1);
+				break;
+			case ATTRB_ARCHIVED:
+				gtk_tree_store_set(tree, &iter, COLUMN_ATTR, icons->archived, -1);
+				break;
+			default:
+				break;
+			}
+
+			if (pixbuf != icons->file)
+			{
+				unref_pixbuf(pixbuf);
+			}
+			g_free(type);
+			g_free(size);
+		}
+		else
+		{
+			gtk_tree_store_append(tree, &iter, parent_iter);
+			gtk_tree_store_set(tree, &iter,
+					   COLUMN_NAME, name,
+					   COLUMN_DATA, (gpointer) ve,
+					   COLUMN_ICON, icons->folder,
+					   -1);
+		}
+
+		g_free(name);
+		child_parent = &iter;
+	}
+
+	for (i = 0; i < g_node_n_children(node); i++)
+	{
+		ctree_append_var_node(g_node_nth_child(node, i), child_parent, icons, TRUE);
+	}
+}
+
+static void ctree_append_app_node(GNode *node, GtkTreeIter *parent_iter, gboolean show_node)
+{
+	GtkTreeIter iter;
+	GtkTreeIter *child_parent = parent_iter;
+	VarEntry *ve = (VarEntry *)node->data;
+	guint i;
+
+	if ((ve != NULL) && show_node)
+	{
+		gchar *type;
+		gchar *size;
+		GdkPixbuf *pixbuf;
+		char *utf8;
+		gchar *name;
+
+		utf8 = ticonv_varname_to_utf8(options.calc_model, ve->name, ve->type);
+		name = g_strdup(utf8);
+		ticonv_utf8_free(utf8);
+		type = g_strdup_printf("%s", tifiles_vartype2string(options.calc_model, ve->type));
+		size = g_strdup_printf("%u", (int)(ve->size));
+		pixbuf = create_var_pixbuf(ve->type);
+
+		gtk_tree_store_append(tree, &iter, parent_iter);
+		gtk_tree_store_set(tree, &iter,
+				   COLUMN_NAME, name,
+				   COLUMN_TYPE, type,
+				   COLUMN_SIZE, size,
+				   COLUMN_DATA, (gpointer) ve,
+				   COLUMN_ICON, pixbuf,
+				   COLUMN_FONT, FONT_NAME,
+				   -1);
+		unref_pixbuf(pixbuf);
+		g_free(name);
+		g_free(type);
+		g_free(size);
+		child_parent = &iter;
+	}
+
+	for (i = 0; i < g_node_n_children(node); i++)
+	{
+		ctree_append_app_node(g_node_nth_child(node, i), child_parent, TRUE);
+	}
 }
 
 static void column_clicked(GtkTreeViewColumn* column, gpointer user_data)
@@ -256,6 +418,7 @@ void ctree_set_basetree(void)
 	GtkTreeIter clc_node;
 	GtkTreeIter *top_node = NULL;
 	GtkTreeIter lcd_node, rom_node, idl_node, clk_node;
+	CalcFeatures features = (calc_handle != NULL) ? ticalcs_calc_features(calc_handle) : FTS_NONE;
 	gchar* str;
 
 	// clear tree
@@ -290,16 +453,22 @@ void ctree_set_basetree(void)
 	gtk_tree_store_set(tree, &vars_node, COLUMN_NAME, NODE3,
 			   COLUMN_DATA, (gpointer) NULL, -1);
 
-	if (tifiles_is_flash(options.calc_model))
+	if (features & OPS_FLASH)
 	{
 		gtk_tree_store_append(tree, &apps_node, top_node);
 		gtk_tree_store_set(tree, &apps_node, COLUMN_NAME, NODE4,
 				   COLUMN_DATA, (gpointer) NULL, -1);
+	}
 
+	if (features & OPS_IDLIST)
+	{
 		gtk_tree_store_append(tree, &idl_node, top_node);
 		gtk_tree_store_set(tree, &idl_node, COLUMN_NAME, NODE5,
 				   COLUMN_DATA, (gpointer) NULL, -1);
+	}
 
+	if (features & OPS_CLOCK)
+	{
 		gtk_tree_store_append(tree, &clk_node, top_node);
 		gtk_tree_store_set(tree, &clk_node, COLUMN_NAME, NODE6,
 				   COLUMN_DATA, (gpointer) NULL, -1);
@@ -315,13 +484,13 @@ void ctree_refresh(void)
 	GtkTreeView *view = GTK_TREE_VIEW(ctree_wnd);
 	GtkTreeViewColumn *col;
 	GdkPixbuf *pix1, *pix2, *pix3, *pix4, *pix5, *pix6;
-	GdkPixbuf *pix9 = NULL;
 	GdkPixbuf *pix_file = NULL;
 	GtkTreeIter parent_node;
-	GtkTreeIter child_node;
 	GtkIconTheme *theme;
 	GNode *vars, *apps;
-	int i, j;
+	CalcFeatures features;
+	CTreeIcons icons;
+	int i;
 
 	const uint8_t folder_type_for_model = tifiles_folder_type(options.calc_model);
 
@@ -330,6 +499,8 @@ void ctree_refresh(void)
 
 	if(working_mode & MODE_CMD)
 		return;
+
+	features = (calc_handle != NULL) ? ticalcs_calc_features(calc_handle) : FTS_NONE;
 
 	// sort variables
 	for(i = 0; i < CTREE_NVCOLS; i++)
@@ -368,7 +539,6 @@ void ctree_refresh(void)
 
 	// place base nodes
 	ctree_set_basetree();
-	memcpy(&parent_node, &vars_node, sizeof(GtkTreeIter));
 
 	// load pixmaps
 	theme = gtk_icon_theme_get_default();
@@ -392,132 +562,42 @@ void ctree_refresh(void)
 	}
 	pix6 = create_pixbuf("TIicon4.ico");
 
+	icons.folder = pix1;
+	icons.file = pix_file;
+	icons.locked = pix4;
+	icons.archived = pix5;
+	icons.folder_type = folder_type_for_model;
+
 	// variables tree
 	vars = remote.var_tree;
 	for (i = 0; i < (int)g_node_n_children(vars); i++)
 	{
 		GNode *parent = g_node_nth_child(vars, i);
-		VarEntry *fe = (VarEntry *) (parent->data);
 
-		if ((fe != NULL) && (ticalcs_calc_features(calc_handle) & FTS_FOLDER))
-		{
-			char *utf8 = ticonv_varname_to_utf8(options.calc_model, fe->name, -1);
-
-			gtk_tree_store_append(tree, &parent_node, &vars_node);
-			if (fe->type == folder_type_for_model)
-			{
-				gtk_tree_store_set(tree, &parent_node,
-						   COLUMN_NAME, utf8,
-						   COLUMN_DATA, (gpointer) fe,
-						   COLUMN_ICON, pix1, -1);
-			}
-			else
-			{
-				gchar **row_text = g_malloc0((CTREE_NCOLS + 1) * sizeof(gchar *));
-				row_text[2] = g_strdup_printf("%s", tifiles_vartype2string(options.calc_model, fe->type));
-				tilp_var_get_size(fe, &row_text[3]);
-				gtk_tree_store_set(tree, &parent_node,
-						   COLUMN_NAME, utf8,
-						   COLUMN_TYPE, row_text[2],
-						   COLUMN_SIZE, row_text[3],
-						   COLUMN_DATA, (gpointer) fe,
-						   COLUMN_ICON, pix_file, -1);
-				g_strfreev(row_text);
-			}
-			ticonv_utf8_free(utf8);
-		}
-
-		for (j = 0; j < (int)g_node_n_children(parent); j++)
-		{
-			GNode *node = g_node_nth_child(parent, j);
-			gchar **row_text = g_malloc0((CTREE_NCOLS + 1) * sizeof(gchar *));
-			VarEntry *ve = (VarEntry *) (node->data);
-			char icon_name[256];
-			char * utf8 = ticonv_varname_to_utf8(options.calc_model, ve->name, ve->type);
-
-			row_text[0] = g_strdup(utf8); ticonv_utf8_free(utf8);
-			row_text[2] = g_strdup_printf("%s", tifiles_vartype2string(options.calc_model, ve->type));
-			tilp_var_get_size(ve, &row_text[3]);
-
-			strcpy(icon_name, tifiles_vartype2icon(options.calc_model, ve->type));
-			strcat(icon_name, ".ico");
-			tilp_file_underscorize(icon_name);
-			pix9 = create_pixbuf(icon_name);
-
-			// ticonv wrapper
-			tilp_vars_translate(row_text[0]);
-
-			gtk_tree_store_append(tree, &child_node, &parent_node);
-			gtk_tree_store_set(tree, &child_node, COLUMN_NAME,
-					   row_text[0],
-					   COLUMN_TYPE,
-					   row_text[2], COLUMN_SIZE,
-					   row_text[3], COLUMN_DATA,
-					   (gpointer) ve, COLUMN_ICON, pix9,
-					   COLUMN_FONT, FONT_NAME,
-					   -1);
-
-			switch (ve->attr)
-			{
-			case ATTRB_LOCKED:
-				gtk_tree_store_set(tree, &child_node, COLUMN_ATTR, pix4, -1);
-				break;
-			case ATTRB_ARCHIVED:
-				gtk_tree_store_set(tree, &child_node, COLUMN_ATTR, pix5, -1);
-				break;
-			default:
-				break;
-			}
-			g_object_unref(pix9);
-			g_strfreev(row_text);
-		}
+		memcpy(&parent_node, &vars_node, sizeof(GtkTreeIter));
+		ctree_append_var_node(parent, &parent_node, &icons, (features & FTS_FOLDER) != 0);
 	}
 
 	// Appplications tree
 	apps = remote.app_tree;
-	for (i = 0; i < (int)g_node_n_children(apps); i++)
+	if ((features & OPS_FLASH) && (apps != NULL))
 	{
-		GNode *parent = g_node_nth_child(apps, i);
-
-		for (j = 0; j < (int)g_node_n_children(parent); j++)
+		for (i = 0; i < (int)g_node_n_children(apps); i++)
 		{
-			GNode *node = g_node_nth_child(parent, j);
-			gchar **row_text = g_malloc0((CTREE_NCOLS + 1) * sizeof(gchar *));
-			VarEntry *ve = (VarEntry *) (node->data);
-			char icon_name[256];
-			char * utf8 = ticonv_varname_to_utf8(options.calc_model, ve->name, ve->type);
+			GNode *parent = g_node_nth_child(apps, i);
 
-			row_text[0] = g_strdup(utf8); ticonv_utf8_free(utf8);
-			row_text[2] = g_strdup_printf("%s", tifiles_vartype2string(options.calc_model, ve->type));
-			row_text[3] = g_strdup_printf("%u", (int) (ve->size));
-
-			strcpy(icon_name, tifiles_vartype2icon(options.calc_model, ve->type));
-			strcat(icon_name, ".ico");
-			tilp_file_underscorize(icon_name);
-			pix9 = create_pixbuf(icon_name);
-
-			gtk_tree_store_append(tree, &child_node, &apps_node);
-			gtk_tree_store_set(tree, &child_node,
-					COLUMN_NAME, row_text[0],
-					COLUMN_TYPE, row_text[2],
-					COLUMN_SIZE, row_text[3],
-					COLUMN_DATA, (gpointer) ve,
-					COLUMN_ICON, pix9,
-					COLUMN_FONT, FONT_NAME,
-					   -1);
-			g_object_unref(pix9);
-			g_strfreev(row_text);
+			ctree_append_app_node(parent, &apps_node, FALSE);
 		}
 	}
 	gtk_tree_view_expand_all(GTK_TREE_VIEW(ctree_wnd));
 
-	g_object_unref(pix_file);
-	g_object_unref(pix1);
-	g_object_unref(pix2);
-	g_object_unref(pix3);
-	g_object_unref(pix4);
-	g_object_unref(pix5);
-	g_object_unref(pix6);
+	unref_pixbuf(pix_file);
+	unref_pixbuf(pix1);
+	unref_pixbuf(pix2);
+	unref_pixbuf(pix3);
+	unref_pixbuf(pix4);
+	unref_pixbuf(pix5);
+	unref_pixbuf(pix6);
 
 	tilp_remote_selection_destroy();
 }
@@ -643,12 +723,27 @@ gboolean on_treeview1_key_press_event(GtkWidget* widget, GdkEventKey* event, gpo
 	return FALSE;
 }
 
+static void ctree_last_descendant(GtkTreeModel *model, GtkTreeIter *iter)
+{
+	while (gtk_tree_model_iter_has_child(model, iter))
+	{
+		GtkTreeIter child;
+		gint n = gtk_tree_model_iter_n_children(model, iter);
+
+		if (!gtk_tree_model_iter_nth_child(model, &child, iter, n - 1))
+		{
+			break;
+		}
+		memcpy(iter, &child, sizeof(GtkTreeIter));
+	}
+}
+
 void ctree_select_vars(gint action)
 {
 	GtkTreeView *view;
 	GtkTreeModel *model;
 	GtkTreePath *path = path_to_drag;
-	GtkTreeIter parent, start_iter, end_iter, iter;
+	GtkTreeIter parent, start_iter, end_iter;
 	view = GTK_TREE_VIEW(ctree_wnd);
 	model = gtk_tree_view_get_model(view);
 
@@ -660,21 +755,15 @@ void ctree_select_vars(gint action)
 		GtkTreeSelection *sel;
 		GtkTreePath *start_path, *end_path;
 		gint n;
-		gboolean valid;
 
 		sel = gtk_tree_view_get_selection(GTK_TREE_VIEW(ctree_wnd));
 		n = gtk_tree_model_iter_n_children(model, &parent);
 
-		valid = gtk_tree_model_iter_children(model, &start_iter, &parent);
+		gtk_tree_model_iter_children(model, &start_iter, &parent);
 		start_path = gtk_tree_model_get_path(model, &start_iter);
 
-		valid = gtk_tree_model_iter_nth_child(model, &end_iter, &parent, n - 1);
-		if(gtk_tree_model_iter_has_child(model, &end_iter))
-		{
-			n = gtk_tree_model_iter_n_children(model, &end_iter);
-			valid = gtk_tree_model_iter_nth_child(model, &iter, &end_iter, n - 1);
-			memcpy(&end_iter, &iter, sizeof(GtkTreeIter));
-		}
+		gtk_tree_model_iter_nth_child(model, &end_iter, &parent, n - 1);
+		ctree_last_descendant(model, &end_iter);
 		end_path = gtk_tree_model_get_path(model, &end_iter);
 
 		if (!action)

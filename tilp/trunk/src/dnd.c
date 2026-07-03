@@ -74,6 +74,40 @@ static GtkTargetEntry target_table_2[] =
 
 static guint n_targets = 1;
 
+static gchar *get_remote_target_folder(VarEntry *ve)
+{
+	if (ve == NULL)
+	{
+		return NULL;
+	}
+
+	if (ve->type != tifiles_folder_type(options.calc_model))
+	{
+		return g_strdup(ve->folder);
+	}
+
+	if (!strcmp(ve->folder, ""))
+	{
+		return g_strdup(ve->name);
+	}
+
+	if (!strcmp(ve->name, ""))
+	{
+		return g_strdup(ve->folder);
+	}
+
+	if (options.calc_model == CALC_NSPIRE)
+	{
+		if (g_str_has_suffix(ve->folder, "/"))
+		{
+			return g_strconcat(ve->folder, ve->name, NULL);
+		}
+		return g_strconcat(ve->folder, "/", ve->name, NULL);
+	}
+
+	return g_strdup(ve->folder);
+}
+
 void dnd_init(void)
 {
 	// from list to tree
@@ -119,8 +153,9 @@ void on_treeview1_drag_data_received(GtkWidget * widget,
 	GtkTreeViewDropPosition pos;
 	GtkTreeIter iter;
 	VarEntry *ve;
-	gchar *name;
+	gchar *name = NULL;
 	gchar *target = NULL;
+	gchar *target_folder = NULL;
 	gboolean success = FALSE;
 
 	if ((gtk_selection_data_get_length(data) >= 0) && (gtk_selection_data_get_format(data) == 8))
@@ -141,8 +176,9 @@ void on_treeview1_drag_data_received(GtkWidget * widget,
 			tilp_local_selection_destroy();
 			for (i = 0;list[i] != NULL; i++)
 			{
-				name = g_filename_from_uri(list[i], NULL, NULL);
-				tilp_local_selection_add(name);
+				gchar *filename = g_filename_from_uri(list[i], NULL, NULL);
+				tilp_local_selection_add(filename);
+				g_free(filename);
 			}
 			g_strfreev(list);
 		}
@@ -167,10 +203,8 @@ void on_treeview1_drag_data_received(GtkWidget * widget,
 		else if (ve && tifiles_has_folder(options.calc_model))
 		{
 			// send to folder
-			if(!strcmp(ve->folder, ""))
-				target = ve->name;
-			else
-				target = ve->folder;
+			target_folder = get_remote_target_folder(ve);
+			target = target_folder;
 		}
 		else if(!strcmp(name, NODE2))	// Operating System
 		{
@@ -181,7 +215,7 @@ void on_treeview1_drag_data_received(GtkWidget * widget,
 			if(options.calc_model == CALC_NSPIRE)
 			{
 				gif->msg_box1(_("Error"), "You have to drag&drop to a target folder!");
-				return;
+				goto end;
 			}
 			else
 			{
@@ -197,6 +231,8 @@ void on_treeview1_drag_data_received(GtkWidget * widget,
 		success = TRUE;
 	}
 end:
+	g_free(name);
+	g_free(target_folder);
 	gtk_drag_finish(drag_context, success, FALSE, _time);
 	return;
 }
@@ -314,4 +350,3 @@ void on_treeview2_drag_data_received(GtkWidget * widget,
 	gtk_drag_finish(drag_context, FALSE, FALSE, _time);
 	return;
 }
-
