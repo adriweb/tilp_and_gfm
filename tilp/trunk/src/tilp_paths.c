@@ -30,6 +30,9 @@
 #include <stdio.h>
 #include <string.h>
 #include <unistd.h>
+#if defined(__MACOSX__)
+#include <mach-o/dyld.h>
+#endif
 #ifdef __WIN32__
 #include <windows.h>
 #endif
@@ -38,6 +41,10 @@
 #include <glib/gstdio.h>
 
 #include "tilp_core.h"
+
+#ifndef GSETTINGS_SCHEMA_SUBDIR
+#define GSETTINGS_SCHEMA_SUBDIR "share/tilp2/glib_schemas"
+#endif
 
 TilpInstPaths inst_paths = 
 {
@@ -142,8 +149,113 @@ static void init_win32_paths(void)
 }
 #endif				/*  */
 
+#if defined(__MACOSX__) || defined(__LINUX__) || defined(__WIN32__)
+/*
+ * GTK 3's file chooser uses GSettings. A static GTK build still needs its
+ * compiled schemas at runtime, so point GLib at the copy installed next to
+ * TiLP. Keep an explicit user override, and retain GLib's normal search path
+ * when the bundled database is not present (for example, in a build tree).
+ */
+static gchar *get_executable_path(void)
+{
+#if defined(__MACOSX__)
+	uint32_t executable_path_size = 0;
+	gchar *executable_path;
+
+	_NSGetExecutablePath(NULL, &executable_path_size);
+	if (executable_path_size == 0)
+	{
+		return NULL;
+	}
+
+	executable_path = g_malloc(executable_path_size);
+	if (_NSGetExecutablePath(executable_path, &executable_path_size) != 0)
+	{
+		g_free(executable_path);
+		return NULL;
+	}
+
+	return executable_path;
+#elif defined(__LINUX__)
+	return g_file_read_link("/proc/self/exe", NULL);
+#elif defined(__WIN32__)
+	DWORD executable_path_size = MAX_PATH;
+
+	while (executable_path_size <= 32768)
+	{
+		DWORD length;
+		gunichar2 *executable_path_utf16 = g_new(gunichar2, executable_path_size);
+		gchar *executable_path;
+
+		length = GetModuleFileNameW(NULL, (LPWSTR) executable_path_utf16,
+		                            executable_path_size);
+		if (length == 0)
+		{
+			g_free(executable_path_utf16);
+			return NULL;
+		}
+		if (length < executable_path_size)
+		{
+			executable_path = g_utf16_to_utf8(executable_path_utf16,
+			                                  length, NULL, NULL, NULL);
+			g_free(executable_path_utf16);
+			return executable_path;
+		}
+
+		g_free(executable_path_utf16);
+		executable_path_size *= 2;
+	}
+
+	return NULL;
+#endif
+}
+
+static void init_bundled_gsettings_path(void)
+{
+	gchar *executable_path;
+	gchar *canonical_path;
+	gchar *bin_dir;
+	gchar *prefix_dir;
+	gchar *schema_dir;
+	gchar *compiled_schema;
+
+	if (g_getenv("GSETTINGS_SCHEMA_DIR") != NULL)
+	{
+		return;
+	}
+
+	executable_path = get_executable_path();
+	if (executable_path == NULL)
+	{
+		return;
+	}
+
+	canonical_path = g_canonicalize_filename(executable_path, NULL);
+	bin_dir = g_path_get_dirname(canonical_path);
+	prefix_dir = g_path_get_dirname(bin_dir);
+	schema_dir = g_build_filename(prefix_dir, GSETTINGS_SCHEMA_SUBDIR, NULL);
+	compiled_schema = g_build_filename(schema_dir, "gschemas.compiled", NULL);
+
+	if (g_file_test(compiled_schema, G_FILE_TEST_IS_REGULAR))
+	{
+		g_setenv("GSETTINGS_SCHEMA_DIR", schema_dir, FALSE);
+	}
+
+	g_free(compiled_schema);
+	g_free(schema_dir);
+	g_free(prefix_dir);
+	g_free(bin_dir);
+	g_free(canonical_path);
+	g_free(executable_path);
+}
+#endif
+
 int tilp_paths_init(void)
 {
+
+#if defined(__MACOSX__) || defined(__LINUX__) || defined(__WIN32__)
+	init_bundled_gsettings_path();
+#endif
 
 #if defined(__LINUX__) || defined(__BSD__) || defined(__MACOSX__)
 	init_linux_paths();

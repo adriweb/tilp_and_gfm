@@ -58,6 +58,54 @@ endif()
 option(BUILD_USING_GTK3 "Build using GTK+3 instead of GTK+2" OFF)
 if(BUILD_USING_GTK3)
     set(GTK_DEP "gtk+-3.0")
+    pkg_get_variable(GTK3_PREFIX gtk+-3.0 prefix)
+
+    # GTK's file chooser uses GSettings at runtime. Static linking does not
+    # embed the schema database, so portable installations need a compiled
+    # copy instead of relying on GTK being installed globally.
+    if(APPLE OR WIN32 OR CMAKE_SYSTEM_NAME STREQUAL "Linux")
+        set(GTK3_SCHEMA_SOURCE_DIR "${GTK3_PREFIX}/share/glib-2.0/schemas")
+        file(GLOB GTK3_SCHEMA_FILES CONFIGURE_DEPENDS
+                "${GTK3_SCHEMA_SOURCE_DIR}/org.gtk.Settings.*.gschema.xml")
+
+        find_program(GLIB_COMPILE_SCHEMAS_EXECUTABLE
+                NAMES glib-compile-schemas
+                HINTS "${GTK3_PREFIX}/tools/glib" "${GTK3_PREFIX}/bin")
+
+        if(NOT GTK3_SCHEMA_FILES)
+            message(FATAL_ERROR
+                    "No GTK GSettings schemas found in ${GTK3_SCHEMA_SOURCE_DIR}")
+        endif()
+        if(NOT GLIB_COMPILE_SCHEMAS_EXECUTABLE)
+            message(FATAL_ERROR "glib-compile-schemas was not found")
+        endif()
+
+        set(GTK3_COMPILED_SCHEMA_DIR
+                "${CMAKE_CURRENT_BINARY_DIR}/glib-2.0/schemas")
+        set(GTK3_COMPILED_SCHEMA
+                "${GTK3_COMPILED_SCHEMA_DIR}/gschemas.compiled")
+
+        add_custom_command(
+                OUTPUT "${GTK3_COMPILED_SCHEMA}"
+                COMMAND "${CMAKE_COMMAND}" -E make_directory
+                        "${GTK3_COMPILED_SCHEMA_DIR}"
+                COMMAND "${GLIB_COMPILE_SCHEMAS_EXECUTABLE}"
+                        "--targetdir=${GTK3_COMPILED_SCHEMA_DIR}"
+                        "${GTK3_SCHEMA_SOURCE_DIR}"
+                DEPENDS ${GTK3_SCHEMA_FILES}
+                COMMENT "Compiling GTK GSettings schemas"
+                VERBATIM)
+        add_custom_target(tilp2_gsettings_schemas ALL
+                DEPENDS "${GTK3_COMPILED_SCHEMA}")
+        add_dependencies(tilp2 tilp2_gsettings_schemas)
+
+        set(TILP_GSETTINGS_SCHEMA_SUBDIR
+                "${CMAKE_INSTALL_DATADIR}/${PROJECT_NAME}/glib_schemas")
+        target_compile_definitions(tilp2 PRIVATE
+                GSETTINGS_SCHEMA_SUBDIR="${TILP_GSETTINGS_SCHEMA_SUBDIR}")
+        install(FILES ${GTK3_SCHEMA_FILES} "${GTK3_COMPILED_SCHEMA}"
+                DESTINATION "${TILP_GSETTINGS_SCHEMA_SUBDIR}")
+    endif()
 else()
     set(GTK_DEP "gtk+-2.0")
 endif()
