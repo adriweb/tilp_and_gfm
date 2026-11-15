@@ -228,6 +228,62 @@ int tilp_device_probe_all(int ***result)
 //----------------------------------------------------------------------------
 
 static int lk_open = 0; /* keep status to avoid multiple error messages */
+static int explicit_calc_mismatch = 0;
+
+int tilp_device_has_explicit_calc_mismatch(void)
+{
+	return explicit_calc_mismatch;
+}
+
+static int tilp_device_update_calc_model_from_usb(void)
+{
+	int ret;
+	int len = 0;
+	CableDeviceInfo *devices = NULL;
+	CableDeviceInfo info = { CABLE_FAMILY_UNKNOWN, CABLE_VARIANT_UNKNOWN };
+	CalcModel detected;
+	const int calc_model_override = tilp_cmdline_has_calc_model_override();
+
+	explicit_calc_mismatch = 0;
+
+	if (options.cable_model != CABLE_USB)
+		return 0;
+
+	ret = ticables_get_usb_device_info(&devices, &len);
+	if (ret || options.cable_port < PORT_1 || options.cable_port > len)
+	{
+		ticables_free_usb_device_info(devices);
+		if (calc_model_override)
+		{
+			tilp_warning("Command line requested calculator %s on USB port #%d, but no USB calculator was found on that port.",
+				ticalcs_model_to_string(options.calc_model), options.cable_port);
+			explicit_calc_mismatch = 1;
+			return -1;
+		}
+		return 0;
+	}
+
+	info = devices[options.cable_port - PORT_1];
+	ticables_free_usb_device_info(devices);
+
+	detected = ticalcs_device_info_to_model(&info);
+	if (detected != CALC_NONE && detected != (CalcModel)options.calc_model)
+	{
+		if (calc_model_override)
+		{
+			tilp_warning("Command line requested calculator %s on USB port #%d, but found %s. Not overriding the explicit calculator model.",
+				ticalcs_model_to_string(options.calc_model), options.cable_port, ticalcs_model_to_string(detected));
+			explicit_calc_mismatch = 1;
+			return -1;
+		}
+
+		tilp_info("Detected calculator %s on selected USB port, overriding configured calculator %s",
+			ticalcs_model_to_string(detected), ticalcs_model_to_string(options.calc_model));
+		options.calc_model = detected;
+	}
+
+	return 0;
+}
 
 int tilp_device_open(void)
 {
@@ -241,12 +297,10 @@ int tilp_device_open(void)
 		tilp_device_close();
 	}
 
-	cable = ticables_model_to_string(options.cable_model);
-	calc = ticalcs_model_to_string(options.calc_model);
-	tilp_info("Opening cable %s on port #%d to communicate with calculator %s", cable, options.cable_port, calc);
-	if (options.calc_model == CALC_NONE)
+	ret = tilp_device_update_calc_model_from_usb();
+	if (ret)
 	{
-		tilp_warning("Attempting to communicate with calculator \"none\" !");
+		return ret;
 	}
 
 	cable_handle = ticables_handle_new(options.cable_model, options.cable_port);
@@ -258,6 +312,14 @@ int tilp_device_open(void)
 	{
 		ticables_options_set_timeout(cable_handle, options.cable_timeout);
 		ticables_options_set_delay(cable_handle, options.cable_delay);
+
+		cable = ticables_model_to_string(options.cable_model);
+		calc = ticalcs_model_to_string(options.calc_model);
+		tilp_info("Opening cable %s on port #%d to communicate with calculator %s", cable, options.cable_port, calc);
+		if (options.calc_model == CALC_NONE)
+		{
+			tilp_warning("Attempting to communicate with calculator \"none\" !");
+		}
 
 		calc_handle = ticalcs_handle_new(options.calc_model);
 		if (calc_handle == NULL)

@@ -113,6 +113,8 @@ static void signal_handler(int sig_no)
 */
 int tilp_init(int *argc, char ***argv)
 {
+	int ret;
+
 	/* Display program version */
 	tilp_cmdline_version();
 
@@ -176,7 +178,6 @@ int tilp_init(int *argc, char ***argv)
 	/* Set cable & calc */
 	if(options.auto_detect && options.usb_avail)
 	{
-		int ret;
 		CableModel cable;
 		CalcModel calc;
 		CablePort port;
@@ -190,7 +191,11 @@ int tilp_init(int *argc, char ***argv)
 		}
 	}
 
-	tilp_device_open();
+	ret = tilp_device_open();
+	if (ret && tilp_device_has_explicit_calc_mismatch())
+	{
+		return 1;
+	}
 
 	/* 
 	   If we are in command line mode, does the required operation
@@ -198,8 +203,6 @@ int tilp_init(int *argc, char ***argv)
 	 */
 	if((working_mode & MODE_CMD) && !(working_mode & MODE_GUI))
 	{
-		int ret;
-
 		ret = tilp_cmdline_send();
 		exit(ret);
 	}

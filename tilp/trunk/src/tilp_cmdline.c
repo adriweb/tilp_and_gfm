@@ -33,6 +33,7 @@ static gchar** flist;
 static gint dont_use_gui;
        gint silent = 0;
 static gint show_version;
+static gint calc_model_override;
 
 static GOptionEntry entries[] = 
 {
@@ -58,6 +59,11 @@ void tilp_cmdline_version(void)
 	printf(_("PLEASE READ THE DOCUMENTATION FOR DETAILS\n"));
 	//printf(_("built on %s %s\n"), __DATE__, __TIME__);
 	fflush(stdout);
+}
+
+int tilp_cmdline_has_calc_model_override(void)
+{
+	return calc_model_override;
 }
 
 /* Search for command line options and build file list (pseudo-selection) */
@@ -91,6 +97,7 @@ int tilp_cmdline_scan(int *argc, char ***argv)
 	if(calc != NULL)
 	{
 		options.calc_model = ticalcs_string_to_model(calc);
+		calc_model_override = TRUE;
 		g_free(calc);
 	}
 
@@ -128,7 +135,10 @@ int tilp_cmdline_scan(int *argc, char ***argv)
 				for(i = 0; i < CALC_MAX; i++)
 				{
 					if(!g_ascii_strcasecmp(ticalcs_model_to_string(i), *p))
+					{
 						options.calc_model = i;
+						calc_model_override = TRUE;
+					}
 				}
 			}
 		}
@@ -266,4 +276,3 @@ int tilp_cmdline_send(void)
 
 	return ret;
 }
-

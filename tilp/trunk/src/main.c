@@ -120,7 +120,10 @@ int main(int argc, char *argv[])
 	g_setenv("G_MESSAGES_DEBUG", "all", /* overwrite = */ FALSE);
 
 	/* Init the tilp core */
-	tilp_init(&argc, &argv);
+	if (tilp_init(&argc, &argv))
+	{
+		return 1;
+	}
 
 	/* Init GTK+ */
 	gtk_init(&argc, &argv);
