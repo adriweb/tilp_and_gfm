@@ -210,6 +210,21 @@ static CablePort get_cable_port(GtkWidget *combo)
 	return (cbp < 0 ? 0 : cbp);
 }
 
+// Section headings have no model value; keep them distinct and non-selectable.
+static void calc_cell_data_func(GtkCellLayout *layout, GtkCellRenderer *renderer,
+                               GtkTreeModel *model, GtkTreeIter *iter, gpointer user_data)
+{
+	char *value = NULL;
+
+	gtk_tree_model_get(model, iter, COL_VALUE, &value, -1);
+	g_object_set(renderer,
+	             "sensitive", value != NULL,
+	             "weight", value ? PANGO_WEIGHT_NORMAL : PANGO_WEIGHT_BOLD,
+	             "xpad", value ? 12 : 0,
+	             NULL);
+	g_free(value);
+}
+
 // Select calc model in combobox
 static void set_calc_model(GtkWidget *combo, CalcModel cm)
 {
@@ -332,6 +347,9 @@ gint display_device_dbox(void)
 
 	// Calc
 	om_calc = GTK_WIDGET (gtk_builder_get_object (builder, "combobox3"));
+	gtk_cell_layout_set_cell_data_func(GTK_CELL_LAYOUT(om_calc),
+	        GTK_CELL_RENDERER(gtk_builder_get_object(builder, "renderer3")),
+	        calc_cell_data_func, NULL, NULL);
 	set_calc_model(om_calc, options.calc_model);
 
 	// Timeout

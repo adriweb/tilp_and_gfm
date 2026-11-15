@@ -89,6 +89,10 @@
         <col id="0" translatable="yes">None</col>
         <col id="1" translatable="no">none</col>
       </row>
+      <!-- Section headings have no model value and are not selectable. -->
+      <row>
+        <col id="0" translatable="yes">Z80</col>
+      </row>
       <row>
         <col id="0" translatable="yes">TI-73</col>
         <col id="1" translatable="no">ti73</col>
@@ -106,24 +110,16 @@
         <col id="1" translatable="no">ti83</col>
       </row>
       <row>
-        <col id="0" translatable="yes">TI-83+(.fr) / TI-82+</col>
+        <col id="0" translatable="yes">TI-83 Plus(.fr) / TI-82+</col>
         <col id="1" translatable="no">ti83+</col>
       </row>
       <row>
-        <col id="0" translatable="yes">TI-84+ / TI-83+.fr USB</col>
+        <col id="0" translatable="yes">TI-84 Plus / TI-83 Plus.fr USB</col>
         <col id="1" translatable="no">ti84+</col>
       </row>
       <row>
-        <col id="0" translatable="yes">TI-84+CSE</col>
+        <col id="0" translatable="yes">TI-84 Plus CSE</col>
         <col id="1" translatable="no">ti84+cse</col>
-      </row>
-      <row>
-        <col id="0" translatable="yes">TI-83 Premium CE</col>
-        <col id="1" translatable="no">ti83pce</col>
-      </row>
-      <row>
-        <col id="0" translatable="yes">TI-84 Plus CE</col>
-        <col id="1" translatable="no">ti84+ce</col>
       </row>
       <row>
         <col id="0" translatable="yes">TI-82 Advanced</col>
@@ -142,6 +138,24 @@
         <col id="1" translatable="no">ti86</col>
       </row>
       <row>
+        <col id="0" translatable="yes">eZ80</col>
+      </row>
+      <row>
+        <col id="0" translatable="yes">TI-82 Advanced Edition Python</col>
+        <col id="1" translatable="no">ti82aep</col>
+      </row>
+      <row>
+        <col id="0" translatable="yes">TI-83 Premium CE</col>
+        <col id="1" translatable="no">ti83pce</col>
+      </row>
+      <row>
+        <col id="0" translatable="yes">TI-84 Plus CE(-T)</col>
+        <col id="1" translatable="no">ti84+ce</col>
+      </row>
+      <row>
+        <col id="0" translatable="yes">68k</col>
+      </row>
+      <row>
         <col id="0" translatable="yes">TI-89</col>
         <col id="1" translatable="no">ti89</col>
       </row>
@@ -154,16 +168,125 @@
         <col id="1" translatable="no">ti92</col>
       </row>
       <row>
-        <col id="0" translatable="yes">TI-92+</col>
+        <col id="0" translatable="yes">TI-92 Plus</col>
         <col id="1" translatable="no">ti92+</col>
       </row>
       <row>
-        <col id="0" translatable="yes">TI-V200 PLT</col>
+        <col id="0" translatable="yes">Voyage 200 PLT</col>
         <col id="1" translatable="no">v200</col>
       </row>
       <row>
-        <col id="0" translatable="yes">TI-Nspire</col>
+        <col id="0" translatable="yes">Nspire</col>
+      </row>
+      <row>
+        <col id="0" translatable="yes">TI-Nspire (Clickpad)</col>
         <col id="1" translatable="no">nspire</col>
+      </row>
+      <row>
+        <col id="0" translatable="yes">TI-Nspire CAS (Clickpad)</col>
+        <col id="1" translatable="no">nspireclickpadcas</col>
+      </row>
+      <row>
+        <col id="0" translatable="yes">TI-Nspire (Touchpad)</col>
+        <col id="1" translatable="no">nspiretouchpad</col>
+      </row>
+      <row>
+        <col id="0" translatable="yes">TI-Nspire CAS (Touchpad)</col>
+        <col id="1" translatable="no">nspiretouchpadcas</col>
+      </row>
+      <row>
+        <col id="0" translatable="yes">TI-Nspire CX</col>
+        <col id="1" translatable="no">nspirecx</col>
+      </row>
+      <row>
+        <col id="0" translatable="yes">TI-Nspire CX(-C) CAS</col>
+        <col id="1" translatable="no">nspirecxcas</col>
+      </row>
+      <row>
+        <col id="0" translatable="yes">TI-Nspire CM-C</col>
+        <col id="1" translatable="no">nspirecmc</col>
+      </row>
+      <row>
+        <col id="0" translatable="yes">TI-Nspire CM-C CAS</col>
+        <col id="1" translatable="no">nspirecmccas</col>
+      </row>
+      <row>
+        <col id="0" translatable="yes">TI-Nspire CX II</col>
+        <col id="1" translatable="no">nspirecxii</col>
+      </row>
+      <row>
+        <col id="0" translatable="yes">TI-Nspire CX II-T</col>
+        <col id="1" translatable="no">nspirecxiit</col>
+      </row>
+      <row>
+        <col id="0" translatable="yes">TI-Nspire CX II(-T/-C) CAS</col>
+        <col id="1" translatable="no">nspirecxiicas</col>
+      </row>
+      <row>
+        <col id="0" translatable="yes">Evo</col>
+      </row>
+      <row>
+        <col id="0" translatable="yes">TI-83 Evo</col>
+        <col id="1" translatable="no">ti83evo</col>
+      </row>
+      <row>
+        <col id="0" translatable="yes">TI-84 Evo</col>
+        <col id="1" translatable="no">ti84evo</col>
+      </row>
+      <row>
+        <col id="0" translatable="yes">TI-84 Evo-T</col>
+        <col id="1" translatable="no">ti84evot</col>
+      </row>
+      <row>
+        <col id="0" translatable="yes">Accessories</col>
+      </row>
+      <row>
+        <col id="0" translatable="yes">TI-Presenter</col>
+        <col id="1" translatable="no">presenter</col>
+      </row>
+      <row>
+        <col id="0" translatable="yes">TI-CBL</col>
+        <col id="1" translatable="no">cbl</col>
+      </row>
+      <row>
+        <col id="0" translatable="yes">TI-CBR</col>
+        <col id="1" translatable="no">cbr</col>
+      </row>
+      <row>
+        <col id="0" translatable="yes">TI-CBL2</col>
+        <col id="1" translatable="no">cbl2</col>
+      </row>
+      <row>
+        <col id="0" translatable="yes">TI-CBR2</col>
+        <col id="1" translatable="no">cbr2</col>
+      </row>
+      <row>
+        <col id="0" translatable="yes">TI-Nspire Cradle</col>
+        <col id="1" translatable="no">nspirecradle</col>
+      </row>
+      <row>
+        <col id="0" translatable="yes">Vernier LabPro</col>
+        <col id="1" translatable="no">labpro</col>
+      </row>
+      <row>
+        <col id="0" translatable="yes">Vernier LabPro (USB)</col>
+        <col id="1" translatable="no">labpro usb</col>
+      </row>
+      <row>
+        <col id="0" translatable="yes">Vernier EasyTemp / Go! Temp</col>
+        <col id="1" translatable="no">gotemp</col>
+      </row>
+      <row>
+        <col id="0" translatable="yes">Vernier EasyLink / Go! Link</col>
+        <col id="1" translatable="no">golink</col>
+      </row>
+      <row>
+        <col id="0" translatable="yes">Vernier Go! Motion / TI-CBR2 (USB)</col>
+        <col id="1" translatable="no">go motion</col>
+      </row>
+      <row>
+        <col id="0" translatable="yes">Vernier Go! Direct</col>
+        <col id="1" translatable="no">go direct</col>
       </row>
     </data>
   </object>
