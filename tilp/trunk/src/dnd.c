@@ -214,7 +214,7 @@ void on_treeview1_drag_data_received(GtkWidget * widget,
 		{
 			if(options.calc_model == CALC_NSPIRE)
 			{
-				gif->msg_box1(_("Error"), "You have to drag&drop to a target folder!");
+				gif->msg_box1(_("Error"), _("You have to drag&drop to a target folder!"));
 				goto end;
 			}
 			else

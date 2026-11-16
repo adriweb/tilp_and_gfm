@@ -90,8 +90,8 @@ void cmdline_scan(int *argc, char ***argv)
 #endif
 
 	// parse command line
-	context = g_option_context_new ("- Group File Manager");
-	g_option_context_add_main_entries(context, entries, ""/*GETTEXT_PACKAGE*/);
+	context = g_option_context_new (_("- Group File Manager"));
+	g_option_context_add_main_entries(context, entries, PACKAGE);
 	g_option_context_set_help_enabled(context, TRUE);
 	g_option_context_set_ignore_unknown_options(context, FALSE);
 	g_option_context_parse(context, argc, argv, &error);

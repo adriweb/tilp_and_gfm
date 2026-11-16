@@ -369,7 +369,7 @@ int tilp_config_write(void)
 	content = g_key_file_to_data(kf, NULL, &error);
 	if(error != NULL)
 	{
-		fprintf (stderr, "Unable to read file: %s\n", error->message);
+		fprintf (stderr, _("Unable to read file: %s\n"), error->message);
 		g_error_free(error);
 		ret = -1;
 		goto exit;
@@ -421,7 +421,7 @@ int tilp_config_read(void)
 		{
 			g_key_file_free(kf);
 			g_free(ini_file);
-			fprintf (stderr, "Unable to read file: %s\n", error->message);
+			fprintf (stderr, _("Unable to read file: %s\n"), error->message);
 			g_error_free(error);
 			return -1;
 		}

@@ -104,7 +104,7 @@ int go_to_bookmark(const char *link)
 
 	if (i == n) 
 	{
-		msg_box1("Error", "Spawn error: could not open the default browser...");
+		msg_box1(_("Error"), _("Spawn error: could not open the default browser..."));
 		return -1;
 	} 
 #endif
@@ -113,7 +113,7 @@ int go_to_bookmark(const char *link)
 		const gchar *message = _("A web browser has been launched: this may take a while before it appears. If it is already launched, the page may be opened in the existing frame.");
 		GTimer *timer;
 
-		msg_box("Information", message, !0);
+		msg_box(_("Information"), message, !0);
 
 		for(timer = g_timer_new(); g_timer_elapsed(timer, NULL) < 3.0;);
 		g_timer_destroy(timer);

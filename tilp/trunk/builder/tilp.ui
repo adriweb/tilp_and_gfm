@@ -102,7 +102,7 @@
                     <property name="visible">True</property>
                     <child>
                       <object class="GtkImageMenuItem" id="imagemenuitem9">
-                        <property name="label">Options</property>
+                        <property name="label" translatable="yes">Options</property>
                         <property name="visible">True</property>
                         <property name="image">options</property>
                         <property name="use_stock">False</property>
@@ -203,7 +203,7 @@
             <child>
               <object class="GtkMenuItem" id="menuitem4">
                 <property name="visible">True</property>
-                <property name="label" translatable="true">_Help</property>
+                <property name="label" translatable="yes">_Help</property>
                 <property name="use_underline">True</property>
                 <child type="submenu">
                   <object class="GtkMenu" id="menu3">

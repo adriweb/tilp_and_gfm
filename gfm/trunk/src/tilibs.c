@@ -32,6 +32,7 @@
 #include "dialog.h"
 #include "tilibs.h"
 #include "version.h"
+#include "support.h"
 
 // Load Tilibs */
 int load_tilibs(void)
@@ -41,8 +42,10 @@ int load_tilibs(void)
   if (g_ascii_strcasecmp(ticonv_version_get(), GFM_REQUIRES_LIBTICONV_VERSION) < 0)
   {
     gchar *error_msg;
-    error_msg = g_strconcat("This application requires libticonv version <b>", GFM_REQUIRES_LIBTICONV_VERSION, "</b>\nYou have version <b>",
-				        ticonv_version_get(), "</b>\nPlease upgrade libticonv and try again.", NULL);
+    error_msg = g_strdup_printf(_("This application requires %s version <b>%s</b>.\n"
+                                 "You have version <b>%s</b>.\nPlease upgrade %s and try again."),
+                                "libticonv", GFM_REQUIRES_LIBTICONV_VERSION,
+                                ticonv_version_get(), "libticonv");
     msgbox_error(error_msg);
     g_free(error_msg);
     exit(-1);
@@ -52,8 +55,10 @@ int load_tilibs(void)
   if (g_ascii_strcasecmp(tifiles_version_get(), GFM_REQUIRES_LIBTIFILES2_VERSION) < 0)
   {
     gchar *error_msg;
-    error_msg = g_strconcat("This application requires libtifiles2 version <b>", GFM_REQUIRES_LIBTIFILES2_VERSION, "</b>\nYou have version <b>",
-				        tifiles_version_get(), "</b>\nPlease upgrade libtifiles2 and try again.", NULL);
+    error_msg = g_strdup_printf(_("This application requires %s version <b>%s</b>.\n"
+                                 "You have version <b>%s</b>.\nPlease upgrade %s and try again."),
+                                "libtifiles2", GFM_REQUIRES_LIBTIFILES2_VERSION,
+                                tifiles_version_get(), "libtifiles2");
     msgbox_error(error_msg);
     g_free(error_msg);
     exit(-1);
@@ -63,8 +68,10 @@ int load_tilibs(void)
   if (g_ascii_strcasecmp(ticalcs_version_get(), GFM_REQUIRES_LIBTICALCS2_VERSION) < 0)
   {
     gchar *error_msg;
-    error_msg = g_strconcat("This application requireslibticalcs2 version <b>", GFM_REQUIRES_LIBTICALCS2_VERSION, "</b>\nYou have version <b>",
-				        ticalcs_version_get(), "</b>\nPlease upgrade libticalcs2 and try again.", NULL);
+    error_msg = g_strdup_printf(_("This application requires %s version <b>%s</b>.\n"
+                                 "You have version <b>%s</b>.\nPlease upgrade %s and try again."),
+                                "libticalcs2", GFM_REQUIRES_LIBTICALCS2_VERSION,
+                                ticalcs_version_get(), "libticalcs2");
     msgbox_error(error_msg);
     g_free(error_msg);
     exit(-1);

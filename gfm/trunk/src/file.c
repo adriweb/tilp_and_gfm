@@ -228,11 +228,8 @@ void glade_files_check(void)
     {
         if (!file_exists((const char *)paths_build_glade(glade_files[i])))
         {
-            msg = g_strconcat("Could not find: <b>",
-                              glade_files[i],
-                              "</b> GUI File in '",
-                              inst_paths.glade_dir,
-                              "' directory!", NULL);
+            msg = g_strdup_printf(_("Could not find GUI file <b>%s</b> in directory '%s'!"),
+                                  glade_files[i], inst_paths.glade_dir);
             msgbox_error(msg);
             g_free(msg);
             exit(-1); // Exit

@@ -77,7 +77,7 @@ GtkWidget *splash_screen_start(void)
 	vbox = gtk_vbox_new(FALSE, 0);
 	gtk_container_add(GTK_CONTAINER(ss.window), vbox);
 	gtk_widget_show(vbox);
-	ss.label = gtk_label_new("starting TiLP...");
+	ss.label = gtk_label_new(_("starting TiLP..."));
 	gtk_box_pack_end(GTK_BOX(vbox), ss.label, FALSE, FALSE, 0);
 	gtk_widget_show(ss.label);
 	pixbuf = create_pixbuf("logo.png");

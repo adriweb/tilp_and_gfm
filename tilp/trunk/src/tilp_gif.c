@@ -42,7 +42,7 @@ static int default_msg_box1(const char *title, const char *message)
 {
 #if !defined(_WINDOWS)
 	tilp_info("msg_box1: [%s] [%s]", title, message);
-	tilp_info("msg_box1: press ENTER for OK");
+	tilp_info(_("msg_box1: press ENTER for OK"));
 	fflush(stdin);
 
 	if(!silent)
@@ -58,7 +58,7 @@ static int default_msg_box2(const char *title, const char *message)
     int c = '2';
 
 	tilp_info("msg_box2: [%s] [%s]", title, message);
-	tilp_info("msg_box2: press 1 for OK, 2 for CANCEL");
+	tilp_info(_("msg_box2: press 1 for OK, 2 for CANCEL"));
 
 	fflush(stdin);
 	if(!silent)
@@ -80,7 +80,7 @@ static int default_msg_box3(const char *title, const char *message,
     int c = '3';
 
 	tilp_info("msg_box3: [%s] [%s]", title, message);
-	tilp_info("msg_box3: press 1 for %s, 2 for %s, 3 for %s", b1, b2, b3);
+	tilp_info(_("msg_box3: press 1 for %s, 2 for %s, 3 for %s"), b1, b2, b3);
 
 	fflush(stdin);
 	if(!silent)
@@ -102,7 +102,7 @@ static int default_msg_box4(const char *title, const char *message)
     int c = '2';
     
 	tilp_info("msg_box4: [%s] [%s]", title, message);
-	tilp_info("msg_box4: press 1 for FORWARD, press 2 for CANCEL");
+	tilp_info(_("msg_box4: press 1 for FORWARD, press 2 for CANCEL"));
 
 	fflush(stdin);
 	if(!silent)
@@ -124,7 +124,7 @@ static char *default_msg_entry(const char *title, const char *message, const cha
     int ret;
 
     tilp_info("msg_entry: [%s] [%s] <%s>", title, message, content);
-    tilp_info("msg_entry: type new content or nothing to cancel ");
+    tilp_info(_("msg_entry: type new content or nothing to cancel "));
     
 	fflush(stdin);
 	if(silent)

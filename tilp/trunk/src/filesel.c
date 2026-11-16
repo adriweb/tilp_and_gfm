@@ -86,7 +86,7 @@ static const gchar* create_fsel_2(const gchar *dirname, const gchar *filename, c
     
 	// create box
 	dialog = gtk_file_chooser_dialog_new (
-					  save ? "Save File" : "Open File",
+					  save ? _("Save file") : _("Open file"),
 				      NULL,
 					  save ? GTK_FILE_CHOOSER_ACTION_SAVE : GTK_FILE_CHOOSER_ACTION_OPEN,
 				      GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
@@ -334,7 +334,7 @@ static gchar** create_fsels_2(const gchar *dirname, const gchar *filename, const
 	sext = ext ? g_filename_to_utf8(ext,-1,NULL,NULL,NULL) : NULL;
     
 	// create box
-	dialog = gtk_file_chooser_dialog_new ("Open File",
+	dialog = gtk_file_chooser_dialog_new (_("Open file"),
 				      NULL,
 					  GTK_FILE_CHOOSER_ACTION_OPEN,
 				      GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,

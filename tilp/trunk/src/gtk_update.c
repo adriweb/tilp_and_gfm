@@ -147,7 +147,7 @@ static gfloat compute_rate_kbps(gboolean *has_rate)
 
 static void refresh_pbar1(void)
 {
-	gchar buffer[64];
+	gchar *buffer;
 	gfloat rate, avg;
 	gboolean has_rate;
 
@@ -174,19 +174,20 @@ static void refresh_pbar1(void)
 				int eta_i = (int)(eta + 0.5);
 				int eta_m = eta_i / 60;
 				int eta_s = eta_i % 60;
-				g_snprintf(buffer, sizeof(buffer),
-					"Rate: %1.1f Kbytes/s ETA: %02i:%02i", avg, eta_m, eta_s);
+				buffer = g_strdup_printf(
+					_("Rate: %1.1f Kbytes/s ETA: %02i:%02i"), avg, eta_m, eta_s);
 			}
 			else
 			{
-				g_snprintf(buffer, sizeof(buffer), "Rate: %1.1f Kbytes/s", avg);
+				buffer = g_strdup_printf(_("Rate: %1.1f Kbytes/s"), avg);
 			}
 		}
 		else
 		{
-			g_snprintf(buffer, sizeof(buffer), "Rate: %1.1f Kbytes/s", avg);
+			buffer = g_strdup_printf(_("Rate: %1.1f Kbytes/s"), avg);
 		}
 		gtk_label_set_text(GTK_LABEL(pbar_wnd.label_rate), buffer);
+		g_free(buffer);
 
 		GTK_REFRESH();
 	}

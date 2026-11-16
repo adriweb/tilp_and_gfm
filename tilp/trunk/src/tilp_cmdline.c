@@ -74,8 +74,8 @@ int tilp_cmdline_scan(int *argc, char ***argv)
 	gint ret = 0;
 
 	// parse command line
-	context = g_option_context_new ("- Tilp Is a Linking Program");
-	g_option_context_add_main_entries(context, entries, ""/*GETTEXT_PACKAGE*/);
+	context = g_option_context_new (_("- Tilp Is a Linking Program"));
+	g_option_context_add_main_entries(context, entries, PACKAGE);
 	g_option_context_set_help_enabled(context, TRUE);
 	g_option_context_set_ignore_unknown_options(context, FALSE);
 	g_option_context_parse(context, argc, argv, &error);
@@ -84,7 +84,7 @@ int tilp_cmdline_scan(int *argc, char ***argv)
 	// report error
 	if (error) 
 	{
-		tilp_warning("Failed to parse cmdline: %s\n", error->message);
+		tilp_warning(_("Failed to parse cmdline: %s\n"), error->message);
 		g_error_free(error);
 	}
 

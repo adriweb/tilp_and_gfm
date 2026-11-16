@@ -60,7 +60,7 @@ void splash_screen_start(void)
 
     // Make the Splash Screen
      splashscreen.splash = gtk_window_new(GTK_WINDOW_TOPLEVEL);
-     gtk_window_set_title(GTK_WINDOW(splashscreen.splash), "GFM Loading...");
+     gtk_window_set_title(GTK_WINDOW(splashscreen.splash), _("GFM Loading..."));
      gtk_window_set_position(GTK_WINDOW(splashscreen.splash), GTK_WIN_POS_CENTER_ALWAYS);
      gtk_window_set_decorated(GTK_WINDOW(splashscreen.splash), FALSE);
      gtk_window_set_role(GTK_WINDOW(splashscreen.splash), "splash");
@@ -84,7 +84,7 @@ void splash_screen_start(void)
      gtk_widget_show(splashscreen.text);
 
      // Set the Version
-     version_string = g_strconcat("Version ", GFM_VERSION, NULL);
+     version_string = g_strdup_printf(_("Version %s"), GFM_VERSION);
      ver_lbl = gtk_label_new(version_string);
      gtk_box_pack_end(GTK_BOX(vbox), ver_lbl, FALSE, FALSE, 0);
      gtk_widget_show(ver_lbl);

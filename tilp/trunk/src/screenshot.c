@@ -78,7 +78,7 @@ void on_sc_load1_activate(GtkMenuItem * menuitem, gpointer user_data)
 	pixbuf = gdk_pixbuf_new_from_file(filename, &error);
 	if (!pixbuf) 
 	{
-		tilp_warning("Failed to load pixbuf file: %s: %s\n",
+		tilp_warning(_("Failed to load pixbuf file: %s: %s\n"),
 			filename, error->message);
 		g_error_free(error);
 	}
@@ -160,7 +160,7 @@ void on_sc_save1_activate(GtkMenuItem * menuitem, gpointer user_data)
 	
 	if (result == FALSE) 
 	{
-		tilp_warning("Failed to save pixbuf file: %s: %s\n", filename, error->message);
+		tilp_warning(_("Failed to save pixbuf file: %s: %s\n"), filename, error->message);
 		g_error_free(error);
 	}
 	filename = NULL;

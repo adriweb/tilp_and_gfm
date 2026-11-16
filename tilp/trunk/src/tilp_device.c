@@ -71,7 +71,7 @@ int tilp_device_probe_usb(CableModel* cable_model, CablePort *port, CalcModel* c
 	CableHandle* handle;
 
 	// search for all USB cables (faster)
-	tilp_info("Searching for link cables...");
+	tilp_info(_("Searching for link cables..."));
 	err = ticables_probing_do(&cables, 5, PROBE_USB | PROBE_FIRST);
 	if(err)
 	{
@@ -83,7 +83,7 @@ int tilp_device_probe_usb(CableModel* cable_model, CablePort *port, CalcModel* c
 	*port = found_port(cables[CABLE_USB]);
 	if(*port)
 	{
-		tilp_info("Searching for handhelds on DirectLink...");
+		tilp_info(_("Searching for handhelds on DirectLink..."));
 		handle = ticables_handle_new(CABLE_USB, *port);
 		ticables_options_set_timeout(handle, 10);
 
@@ -166,7 +166,7 @@ int tilp_device_probe_all(int ***result)
 		int found = 0;
 
 		// Search for cables
-		tilp_info("Searching for link cables...");
+		tilp_info(_("Searching for link cables..."));
 		ticables_probing_do(&array, 5, PROBE_ALL);
 		*result = array;
 
@@ -198,7 +198,7 @@ int tilp_device_probe_all(int ***result)
 					continue;
 				}
 
-				tilp_info("Searching for handhelds on %i:%i...", cable, port);
+				tilp_info(_("Searching for handhelds on %i:%i..."), cable, port);
 
 				ret = ticalcs_probe(cable, port, &calc, !0);
 				if (ret)
@@ -208,7 +208,7 @@ int tilp_device_probe_all(int ***result)
 				}
 				array[cable][port] = calc;
 
-				tilp_info("Found: %s on %s:%s",
+				tilp_info(_("Found: %s on %s:%s"),
 					ticalcs_model_to_string(calc),
 					ticables_model_to_string(cable),
 					ticables_port_to_string(port));
@@ -255,7 +255,7 @@ static int tilp_device_update_calc_model_from_usb(void)
 		ticables_free_usb_device_info(devices);
 		if (calc_model_override)
 		{
-			tilp_warning("Command line requested calculator %s on USB port #%d, but no USB calculator was found on that port.",
+			tilp_warning(_("Command line requested calculator %s on USB port #%d, but no USB calculator was found on that port."),
 				ticalcs_model_to_string(options.calc_model), options.cable_port);
 			explicit_calc_mismatch = 1;
 			return -1;
@@ -271,13 +271,13 @@ static int tilp_device_update_calc_model_from_usb(void)
 	{
 		if (calc_model_override)
 		{
-			tilp_warning("Command line requested calculator %s on USB port #%d, but found %s. Not overriding the explicit calculator model.",
+			tilp_warning(_("Command line requested calculator %s on USB port #%d, but found %s. Not overriding the explicit calculator model."),
 				ticalcs_model_to_string(options.calc_model), options.cable_port, ticalcs_model_to_string(detected));
 			explicit_calc_mismatch = 1;
 			return -1;
 		}
 
-		tilp_info("Detected calculator %s on selected USB port, overriding configured calculator %s",
+		tilp_info(_("Detected calculator %s on selected USB port, overriding configured calculator %s"),
 			ticalcs_model_to_string(detected), ticalcs_model_to_string(options.calc_model));
 		options.calc_model = detected;
 	}
@@ -306,7 +306,7 @@ int tilp_device_open(void)
 	cable_handle = ticables_handle_new(options.cable_model, options.cable_port);
 	if (cable_handle == NULL)
 	{
-		gif->msg_box1("Error", "Can't set cable");
+		gif->msg_box1(_("Error"), _("Can't set cable"));
 	}
 	else
 	{
@@ -315,16 +315,16 @@ int tilp_device_open(void)
 
 		cable = ticables_model_to_string(options.cable_model);
 		calc = ticalcs_model_to_string(options.calc_model);
-		tilp_info("Opening cable %s on port #%d to communicate with calculator %s", cable, options.cable_port, calc);
+		tilp_info(_("Opening cable %s on port #%d to communicate with calculator %s"), cable, options.cable_port, calc);
 		if (options.calc_model == CALC_NONE)
 		{
-			tilp_warning("Attempting to communicate with calculator \"none\" !");
+			tilp_warning(_("Attempting to communicate with calculator \"none\" !"));
 		}
 
 		calc_handle = ticalcs_handle_new(options.calc_model);
 		if (calc_handle == NULL)
 		{
-			gif->msg_box1("Error", "Can't set calc");
+			gif->msg_box1(_("Error"), _("Can't set calc"));
 		}
 		else
 		{
@@ -401,7 +401,7 @@ static int tilp_device_err(int err)
 	if (s)
 	{
 		utf = g_locale_to_utf8(s, -1, NULL, &bw, NULL);
-		gif->msg_box1(_("Error"), utf);
+		gif->msg_box1(_(_("Error")), utf);
 	}
 
 	return err;

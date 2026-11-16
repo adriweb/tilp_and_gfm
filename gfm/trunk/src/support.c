@@ -52,7 +52,7 @@ GtkWidget *lookup_widget(GtkWidget * widget, const gchar * widget_name)
 	found_widget =
 	    (GtkWidget *) g_object_get_data(G_OBJECT(widget), widget_name);
 	if (!found_widget)
-		g_warning("Widget not found: %s", widget_name);
+		g_warning(_("Widget not found: %s"), widget_name);
 	return found_widget;
 }
 static GList *pixmaps_directories = NULL;
@@ -117,7 +117,7 @@ GdkPixbuf *create_pixbuf(const gchar * filename)
 	}
 	pixbuf = gdk_pixbuf_new_from_file(pathname, &error);
 	if (!pixbuf) {
-		printf("Could not load PixMap: %s\n", pathname);
+		printf(_("Could not load PixMap: %s\n"), pathname);
 		g_error_free(error);
 	}
 	g_free(pathname);

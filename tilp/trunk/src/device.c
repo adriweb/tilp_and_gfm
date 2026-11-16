@@ -122,7 +122,7 @@ static void clist_populate(GtkListStore *_store, int full)
 		int **array = NULL;
 		int i, j;
 
-		gtk_label_set_text(GTK_LABEL(lbl), "Searching for devices (~20 seconds)...");
+		gtk_label_set_text(GTK_LABEL(lbl), _("Searching for devices (~20 seconds)..."));
 		GTK_REFRESH();
 		tilp_device_probe_all(&array);
 
@@ -146,7 +146,7 @@ static void clist_populate(GtkListStore *_store, int full)
 			g_strfreev(row);
 		}
 
-		gtk_label_set_text(GTK_LABEL(lbl), "Done !");
+		gtk_label_set_text(GTK_LABEL(lbl), _("Done !"));
 		ticables_probing_finish(&array);
 	}
 }

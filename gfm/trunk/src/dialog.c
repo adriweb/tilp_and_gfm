@@ -28,6 +28,7 @@
 #include <glade/glade.h>
 
 #include "dialog.h"
+#include "support.h"
 #include "paths.h"
 #include "tilibs.h"
 
@@ -43,7 +44,7 @@ int msgbox_one(int type, const char *message)
     
     // Glade File Error
     if (!xml)
-       g_error("Failure Loading GUI Dialog (%s)!\n", __FILE__);
+       g_error(_("Failure Loading GUI Dialog (%s)!\n"), __FILE__);
        
     // Connect The Symbols
     glade_xml_signal_autoconnect(xml);
@@ -100,7 +101,7 @@ int msgbox_two(int type, const char *message)
     
     // Glade File Error
     if (!xml)
-       g_error("Failure Loading GUI Dialog (%s)!\n", __FILE__);
+       g_error(_("Failure Loading GUI Dialog (%s)!\n"), __FILE__);
        
     // Connect The Symbols
     glade_xml_signal_autoconnect(xml);
@@ -116,21 +117,21 @@ int msgbox_two(int type, const char *message)
         // Continue or Cancel?
         case MSGBOX_CONTINUE:
              image = "gtk-dialog-info"; // The Image
-             cancel_button = "_Cancel"; // Cancel Button
-             ok_button = "C_ontinue"; // Ok Button
+             cancel_button = _("_Cancel"); // Cancel Button
+             ok_button = _("C_ontinue"); // Ok Button
         break;
         // Yes or No
         case MSGBOX_YESNO:
              image = "gtk-dialog-question"; // The Image
-             cancel_button = "_No"; // Cancel Button
-             ok_button = "_Yes"; // Ok Button
+             cancel_button = _("_No"); // Cancel Button
+             ok_button = _("_Yes"); // Ok Button
         break;
         // Default
         case MSGBOX_TWO:
         default:
              image = "gtk-dialog-info"; // The Image
-             cancel_button = "_Cancel"; // Cancel Button
-             ok_button = "_Ok"; // Ok Button
+             cancel_button = _("_Cancel"); // Cancel Button
+             ok_button = _("_Ok"); // Ok Button
         break;
     }
     
@@ -182,7 +183,7 @@ int msgbox_three(const char *button1, const char *button2, const char *message)
     
     // Glade File Error
 	if (!xml)
-		g_error("Failure Loading GUI Dialog (%s)!\n", __FILE__);
+		g_error(_("Failure Loading GUI Dialog (%s)!\n"), __FILE__);
        
     // Connect The Symbols
 	glade_xml_signal_autoconnect(xml);
@@ -241,7 +242,7 @@ char *msgbox_input(const char *title, const char *input, const char *question)
     
     // Glade File Error
 	if (!xml)
-		g_error("Failure Loading GUI Dialog (%s)!\n", __FILE__);
+		g_error(_("Failure Loading GUI Dialog (%s)!\n"), __FILE__);
        
     // Connect The Symbols
 	glade_xml_signal_autoconnect(xml);
@@ -302,7 +303,7 @@ int msgbox_model(void)
     
     // Glade File Error
 	if (!xml)
-		g_error("Failure Loading GUI Dialog (%s)!\n", __FILE__);
+		g_error(_("Failure Loading GUI Dialog (%s)!\n"), __FILE__);
        
     // Connect The Symbols
 	glade_xml_signal_autoconnect(xml);

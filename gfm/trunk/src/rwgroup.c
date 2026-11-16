@@ -153,7 +153,7 @@ int tigroup_load(const char *filename)
 	ret = tifiles_file_read_tigroup(filename, GFMFile.contents.tigroup);
 	if(ret)
 	{
-		msgbox_error("Failed to load TiGroup file!");
+		msgbox_error(_("Failed to load TiGroup file!"));
 		tifiles_content_delete_tigroup(GFMFile.contents.tigroup);
 		return -1;
 	}
@@ -331,7 +331,7 @@ int tigroup_save(const char *filename)
 	ret = tifiles_file_write_tigroup(filename, GFMFile.contents.tigroup);
 	if(ret)
 	{
-		msgbox_error("Failed to save TiGroup file!");
+		msgbox_error(_("Failed to save TiGroup file!"));
 		tifiles_content_delete_tigroup(GFMFile.contents.tigroup);
 		return -1;
 	}
@@ -401,7 +401,7 @@ int group_load(const char *filename)
 	ret = tifiles_file_read_regular(filename, GFMFile.contents.group);
 	if(ret)
 	{
-		msgbox_error("Failed to load Group file!");
+		msgbox_error(_("Failed to load Group file!"));
 		tifiles_content_delete_regular(GFMFile.contents.group);
 		return -1;
 	}
@@ -517,7 +517,7 @@ int group_save(const char *filename)
 	ret = tifiles_file_write_regular(filename, GFMFile.contents.group, NULL);
 	if(ret)
 	{
-		msgbox_error("Failed to save Group file!");
+		msgbox_error(_("Failed to save Group file!"));
 		tifiles_content_delete_regular(GFMFile.contents.group);
 		return -1;
 	}

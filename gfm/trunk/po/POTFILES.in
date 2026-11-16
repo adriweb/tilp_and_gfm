@@ -3,6 +3,7 @@
 # GFM source code
 src/cmdline.c
 src/ctree.c
+src/ctree.h
 src/dialog.c
 src/file.c
 src/filesel.c
@@ -17,6 +18,6 @@ src/tilibs.c
 src/ungroup.c
 
 # GFM GUI
-glade/dialogs.str
-glade/gfm.str
+[type: gettext/glade]glade/dialogs.glade
+[type: gettext/glade]glade/gfm.glade
 

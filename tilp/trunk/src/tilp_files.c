@@ -253,7 +253,7 @@ int tilp_file_move_with_check(const char *src, const char *dst)
 	case 1:
 		if (tilp_file_move(src, dst2)) 
 		{
-			gif->msg_box1(_("Error"), _("Unable to move the temporary file.\n"));
+			gif->msg_box1(_(_("Error")), _("Unable to move the temporary file.\n"));
 			g_free(dst2);
 			return 0;
 		}
@@ -325,7 +325,7 @@ int tilp_file_chdir(const char *path)
 {
 	if (g_chdir(path)) 
 	{
-		gif->msg_box1(_("Error"), _("Unable to change directory."));
+		gif->msg_box1(_(_("Error")), _("Unable to change directory."));
 		return -1;
 	}
 
@@ -495,10 +495,10 @@ const char *tilp_file_get_size(FileEntry * fi)
 		g_snprintf(buffer, 32, "  %i", (int) fi->size);
 
 	else if ((fi->size >= 1024) && (fi->size < 1024 * 1024))
-		g_snprintf(buffer, 32, "%i KB", (int) fi->size >> 10);
+		g_snprintf(buffer, 32, _("%i KB"), (int) fi->size >> 10);
 
 	else if (fi->size >= 1024 * 1024)
-		g_snprintf(buffer, 32, "%i MB", (int) fi->size >> 20);
+		g_snprintf(buffer, 32, _("%i MB"), (int) fi->size >> 20);
 
 	return buffer;
 }
@@ -541,7 +541,7 @@ int tilp_file_dirlist(void)
 	dir = g_dir_open(local.cwdir, 0, &error);
 	if (dir == NULL) 
 	{
-		gif->msg_box1("Error", "Unable to open directory !");
+		gif->msg_box1(_("Error"), _("Unable to open directory !"));
 		return -1;
 	}
 

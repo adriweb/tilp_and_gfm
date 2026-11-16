@@ -10,8 +10,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: tilp2 1.19\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-01-09 12:44+0100\n"
-"PO-Revision-Date: 2016-11-18 19:49+0300\n"
+"POT-Creation-Date: 2026-11-16 10:36+0100\n"
+"PO-Revision-Date: 2026-11-16 10:36+0100\n"
 "Last-Translator: Andreas B. Mundt <andi@debian.org>\n"
 "Language-Team: German <debian-l10n-german@lists.debian.org>\n"
 "Language: de\n"
@@ -58,7 +58,7 @@ msgstr "überspringen"
 
 #: ../src/action.c:168 ../src/clist_rbm.c:342 ../src/clock.c:118
 #: ../src/ctree_rbm.c:106 ../src/dboxes.c:254 ../src/dboxes.c:302
-#: ../src/device.c:307 ../src/fileprop.c:62 ../src/manpage.c:74
+#: ../src/device.c:322 ../src/fileprop.c:62 ../src/manpage.c:74
 #: ../src/options.c:48 ../src/pbars.c:56 ../src/pbars.c:84 ../src/pbars.c:112
 #: ../src/pbars.c:141 ../src/pbars.c:172 ../src/release.c:78
 #: ../src/screenshot.c:49 ../src/scroptions.c:49 ../src/tilp.c:91
@@ -74,6 +74,22 @@ msgstr "Die Datei umbenennen"
 msgid "New name: "
 msgstr "Neuer Name: "
 
+#: ../src/bookmark.c:107 ../src/clist_rbm.c:235 ../src/clist_rbm.c:255
+#: ../src/clock.c:86 ../src/dboxes.c:52 ../src/dnd.c:217 ../src/main.c:236
+#: ../src/tilp.c:193 ../src/tilp_calcs.c:350 ../src/tilp_calcs.c:418
+#: ../src/tilp_calcs.c:425 ../src/tilp_calcs.c:550 ../src/tilp_calcs.c:559
+#: ../src/tilp_calcs.c:564 ../src/tilp_calcs.c:569 ../src/tilp_calcs.c:1064
+#: ../src/tilp_calcs.c:1106 ../src/tilp_cmdline.c:207 ../src/tilp_config.c:382
+#: ../src/tilp_device.c:309 ../src/tilp_device.c:327 ../src/tilp_device.c:404
+#: ../src/tilp_error.c:86 ../src/tilp_files.c:256 ../src/tilp_files.c:328
+#: ../src/tilp_files.c:544 ../src/tilp_misc.c:39
+msgid "Error"
+msgstr "Fehler"
+
+#: ../src/bookmark.c:107
+msgid "Spawn error: could not open the default browser..."
+msgstr "Der Standardbrowser konnte nicht gestartet werden …"
+
 #: ../src/bookmark.c:113
 msgid ""
 "A web browser has been launched: this may take a while before it appears. If "
@@ -83,15 +99,24 @@ msgstr ""
 "öffnet. Wenn bereits ein Browser läuft, wurde die Seite eventuell in einem "
 "neuen Reiter geöffnet."
 
-#: ../src/clist.c:218 ../src/ctree.c:199
+#: ../src/bookmark.c:116 ../src/dboxes.c:46 ../src/device.c:402
+#: ../src/device.c:406 ../src/tilp_calcs.c:283 ../src/tilp_calcs.c:296
+#: ../src/tilp_calcs.c:920 ../src/tilp_calcs.c:1060 ../src/tilp_config.c:544
+#: ../src/tilp_config.c:552 ../src/tilp_files.c:141 ../src/tilp_files.c:154
+#: ../src/tilp_files.c:173 ../src/tilp_misc.c:43 ../src/tilp_slct.c:81
+#: ../src/tilp_slct.c:448 ../src/tilp_slct.c:459 ../src/tilp_slct.c:551
+msgid "Information"
+msgstr "Informationen"
+
+#: ../src/clist.c:218 ../src/ctree.c:361
 msgid "Name"
 msgstr "Name"
 
-#: ../src/clist.c:223 ../src/ctree.c:222
+#: ../src/clist.c:223 ../src/ctree.c:384
 msgid "Type"
 msgstr "Typ"
 
-#: ../src/clist.c:228 ../src/ctree.c:227
+#: ../src/clist.c:228 ../src/ctree.c:389
 msgid "Size"
 msgstr "Größe"
 
@@ -102,17 +127,6 @@ msgstr "Datum"
 #: ../src/clist_rbm.c:66
 msgid "Change drive"
 msgstr "Laufwerk ändern"
-
-#: ../src/clist_rbm.c:235 ../src/clist_rbm.c:255 ../src/clock.c:86
-#: ../src/dboxes.c:52 ../src/dnd.c:183 ../src/main.c:233 ../src/tilp.c:193
-#: ../src/tilp_calcs.c:350 ../src/tilp_calcs.c:418 ../src/tilp_calcs.c:425
-#: ../src/tilp_calcs.c:550 ../src/tilp_calcs.c:559 ../src/tilp_calcs.c:564
-#: ../src/tilp_calcs.c:569 ../src/tilp_calcs.c:1064 ../src/tilp_calcs.c:1106
-#: ../src/tilp_cmdline.c:191 ../src/tilp_config.c:382 ../src/tilp_device.c:342
-#: ../src/tilp_error.c:86 ../src/tilp_files.c:256 ../src/tilp_files.c:328
-#: ../src/tilp_misc.c:39
-msgid "Error"
-msgstr "Fehler"
 
 #: ../src/clist_rbm.c:235
 msgid ""
@@ -129,12 +143,12 @@ msgstr ""
 msgid "No clock support!"
 msgstr "Keine Uhrenunterstützung!"
 
-#: ../src/ctree.c:217
+#: ../src/ctree.c:379
 msgid "Attr"
 msgstr "Attr"
 
 #. top node
-#: ../src/ctree.c:263
+#: ../src/ctree.c:433
 #, c-format
 msgid "%s -> %s:#%i"
 msgstr "%s -> %s:#%i"
@@ -179,15 +193,6 @@ msgstr "_Abbrechen"
 msgid "Forward"
 msgstr "Weiter"
 
-#: ../src/dboxes.c:46 ../src/device.c:384 ../src/device.c:388
-#: ../src/tilp_calcs.c:283 ../src/tilp_calcs.c:296 ../src/tilp_calcs.c:920
-#: ../src/tilp_calcs.c:1060 ../src/tilp_config.c:544 ../src/tilp_config.c:552
-#: ../src/tilp_files.c:141 ../src/tilp_files.c:154 ../src/tilp_files.c:173
-#: ../src/tilp_misc.c:43 ../src/tilp_slct.c:81 ../src/tilp_slct.c:448
-#: ../src/tilp_slct.c:459 ../src/tilp_slct.c:551
-msgid "Information"
-msgstr "Informationen"
-
 #: ../src/dboxes.c:48 ../src/tilp_calcs.c:176 ../src/tilp_calcs.c:300
 #: ../src/tilp_calcs.c:430 ../src/tilp_calcs.c:949 ../src/tilp_calcs.c:1134
 #: ../src/tilp_files.c:203 ../src/tilp_slct.c:517
@@ -212,7 +217,15 @@ msgstr "Port"
 msgid "Device"
 msgstr "Gerät"
 
-#: ../src/device.c:384
+#: ../src/device.c:125
+msgid "Searching for devices (~20 seconds)..."
+msgstr "Suche nach Geräten (~20 Sekunden) …"
+
+#: ../src/device.c:149
+msgid "Done !"
+msgstr "Fertig!"
+
+#: ../src/device.c:402
 msgid ""
 "Please note that Titanium through DirectLink USB works under Linux but it "
 "suffers from a limitation: the cable has to unplugged/plugged whenever TiLP "
@@ -222,23 +235,39 @@ msgstr ""
 "Einschränkung funktioniert: Das Kabel muss jedesmal abgezogen/eingesteckt "
 "werden, wenn TiLP beendet wird."
 
-#: ../src/device.c:388
+#: ../src/device.c:406
 msgid "Please note you will have to restart TiLP if connection fails."
 msgstr ""
 "Bitte beachten Sie, dass Sie TiLP neu starten müssen, wenn das Verbinden "
 "scheitert."
 
+#: ../src/dnd.c:217
+msgid "You have to drag&drop to a target folder!"
+msgstr "Sie müssen die Dateien in einen Zielordner ziehen und dort ablegen!"
+
 #: ../src/filesel.c:65
 msgid "_Open"
 msgstr "_Öffnen ..."
 
-#: ../src/filesel.c:273
+#: ../src/filesel.c:89 ../src/filesel.c:273
 msgid "Save file"
 msgstr "Datei speichern"
 
-#: ../src/filesel.c:276 ../src/filesel.c:540
+#. create box
+#: ../src/filesel.c:89 ../src/filesel.c:276 ../src/filesel.c:337
+#: ../src/filesel.c:540
 msgid "Open file"
 msgstr "Datei öffnen"
+
+#: ../src/gtk_update.c:178
+#, c-format
+msgid "Rate: %1.1f Kbytes/s ETA: %02i:%02i"
+msgstr "Übertragungsrate: %1.1f KB/s — Restzeit: %02i:%02i"
+
+#: ../src/gtk_update.c:182 ../src/gtk_update.c:187
+#, c-format
+msgid "Rate: %1.1f Kbytes/s"
+msgstr "Übertragungsrate: %1.1f KB/s"
 
 #: ../src/labels.c:102
 #, c-format
@@ -270,35 +299,54 @@ msgstr "frei: N/A"
 msgid "free: %s"
 msgstr "frei: %s"
 
-#: ../src/main.c:157
+#: ../src/main.c:160
 msgid "Initializing KDE..."
 msgstr "KDE wird initialisiert ..."
 
-#: ../src/main.c:158
+#: ../src/main.c:161
 msgid "TiLP"
 msgstr "TiLP"
 
-#: ../src/main.c:158
+#: ../src/main.c:161
 msgid "Tilp Is a Linking Program"
 msgstr "TiLP Ist ein verLinkungsProgramm"
 
-#: ../src/main.c:164
+#: ../src/main.c:167
 msgid "Loading GUI..."
 msgstr "Grafische Benutzeroberfläche wird geladen ..."
 
-#: ../src/main.c:190
+#: ../src/main.c:193
 msgid "TiLP2"
 msgstr "TiLP2"
 
-#: ../src/main.c:199
+#: ../src/main.c:202
 msgid "Command line..."
 msgstr "Befehlszeile ..."
 
-#: ../src/main.c:233
+#: ../src/main.c:236
 msgid "An TiLP session is already running. Check the task list."
 msgstr ""
 "Es läuft bereits eine TiLP-Sitzung. Prüfen Sie die Liste der laufenden "
 "Prozesse."
+
+#: ../src/screenshot.c:81 ../src/support.c:107
+#, c-format
+msgid "Failed to load pixbuf file: %s: %s\n"
+msgstr "Die Bilddatei konnte nicht geladen werden: %s: %s\n"
+
+#: ../src/screenshot.c:163
+#, c-format
+msgid "Failed to save pixbuf file: %s: %s\n"
+msgstr "Die Bilddatei konnte nicht gespeichert werden: %s: %s\n"
+
+#: ../src/splash.c:80
+msgid "starting TiLP..."
+msgstr "TiLP wird gestartet …"
+
+#: ../src/support.c:42
+#, c-format
+msgid "Widget not found: %s"
+msgstr "Oberflächenelement nicht gefunden: %s"
 
 #: ../src/support.c:83 ../src/support.c:102
 #, c-format
@@ -338,7 +386,7 @@ msgstr ""
 "Bevor Sie dem TiLP-Team mailen, stellen Sie sicher, dass Sie die FAQ gelesen "
 "haben ..."
 
-#: ../src/tilp.c:379 ../src/tilp.c:630 ../builder/tilp.ui.h:52
+#: ../src/tilp.c:379 ../src/tilp.c:630 ../builder/tilp.ui.h:54
 msgid "Restore"
 msgstr "Wiederherstellen"
 
@@ -347,7 +395,7 @@ msgid "Data to restore:"
 msgstr "Daten zur Wiederherstellung:"
 
 #: ../src/tilp.c:589 ../builder/backupdbox.ui.h:1 ../builder/options.ui.h:10
-#: ../builder/tilp.ui.h:50
+#: ../builder/tilp.ui.h:52
 msgid "Backup"
 msgstr "Sicherungskopie"
 
@@ -590,66 +638,87 @@ msgstr ""
 "Der ganze Speicher wird gelöscht.\n"
 "Sind Sie sicher, dass Sie das tun möchten?"
 
-#: ../src/tilp_cmdline.c:39
+#: ../src/tilp_cmdline.c:40
 msgid "Version"
 msgstr "Version"
 
-#: ../src/tilp_cmdline.c:40
+#: ../src/tilp_cmdline.c:41
 msgid "Handheld model"
 msgstr "Modell des tragbaren Geräts"
 
-#: ../src/tilp_cmdline.c:41
+#: ../src/tilp_cmdline.c:42
 msgid "Link cable model"
 msgstr "Verbindungskabel-Modell"
 
-#: ../src/tilp_cmdline.c:42
+#: ../src/tilp_cmdline.c:43
 msgid "Link cable port"
 msgstr "Verbindungskabel-Port"
 
-#: ../src/tilp_cmdline.c:43
+#: ../src/tilp_cmdline.c:44
 msgid "Link cable timeout"
 msgstr "Verbindungskabel-Zeitüberschreitung"
 
-#: ../src/tilp_cmdline.c:44
+#: ../src/tilp_cmdline.c:45
 msgid "Link cable delay"
 msgstr "Verbindungskabel-Verzögerung"
 
-#: ../src/tilp_cmdline.c:45
+#: ../src/tilp_cmdline.c:46
 msgid "Does not use GUI"
 msgstr "Benutzt nicht die grafische Benutzeroberfläche"
 
-#: ../src/tilp_cmdline.c:46
+#: ../src/tilp_cmdline.c:47
 msgid "Silent mode (NO-GUI mode only"
 msgstr "Silent Modus (nur NO-GUI modus"
 
-#: ../src/tilp_cmdline.c:47
+#: ../src/tilp_cmdline.c:48
 msgid "filename(s)"
 msgstr "Dateiname(n)"
 
-#: ../src/tilp_cmdline.c:53
+#: ../src/tilp_cmdline.c:54
 #, c-format
 msgid "TiLP2 - Version %s, (C) 1999-2026 The TILP Team\n"
 msgstr "TiLP2 - Version %s, (C) 1999-2026 The TILP Team\n"
 
-#: ../src/tilp_cmdline.c:55
+#: ../src/tilp_cmdline.c:56
 #, c-format
 msgid "FreeBSD port, (c) 2003-2004 Tijl Coosemans\n"
 msgstr "FreeBSD-Portierung, (c) 2003-2004 Tijl Coosemans\n"
 
-#: ../src/tilp_cmdline.c:57
+#: ../src/tilp_cmdline.c:58
 #, c-format
 msgid "THIS PROGRAM COMES WITH ABSOLUTELY NO WARRANTY\n"
 msgstr "FÜR DIESES PROGRAMM GIBT ES KEINERLEI GEWÄHRLEISTUNG\n"
 
-#: ../src/tilp_cmdline.c:58
+#: ../src/tilp_cmdline.c:59
 #, c-format
 msgid "PLEASE READ THE DOCUMENTATION FOR DETAILS\n"
 msgstr "BITTE LESEN SIE DIE DOKUMENTATION, UM DETAILS ZU ERHALTEN\n"
 
-#: ../src/tilp_cmdline.c:190
+#. parse command line
+#: ../src/tilp_cmdline.c:77
+msgid "- Tilp Is a Linking Program"
+msgstr "- TiLP, ein Programm zur Verbindung mit Taschenrechnern"
+
+#: ../src/tilp_cmdline.c:87
+#, c-format
+msgid "Failed to parse cmdline: %s\n"
+msgstr "Die Befehlszeile konnte nicht ausgewertet werden: %s\n"
+
+#: ../src/tilp_cmdline.c:113
+msgid "Calc and cable model were set, disabling auto-probing.\n"
+msgstr ""
+"Rechner- und Kabelmodell wurden festgelegt; die automatische Erkennung wird "
+"deaktiviert.\n"
+
+#: ../src/tilp_cmdline.c:206
 #, c-format
 msgid "The file <%s> does not exist."
 msgstr "Die Datei <%s> existiert nich."
+
+#: ../src/tilp_config.c:372 ../src/tilp_config.c:424
+#, c-format
+msgid "Unable to read file: %s\n"
+msgstr "Die Datei kann nicht gelesen werden: %s\n"
 
 #: ../src/tilp_config.c:382
 msgid "Unable to write the config file (~/.tilp or ~/tilp.ini).\n"
@@ -664,6 +733,64 @@ msgstr "Konfigurationsdatei gespeichert"
 #: ../src/tilp_config.c:552
 msgid "Configuration file loaded."
 msgstr "Konfigurationsdatei geladen"
+
+#. search for all USB cables (faster)
+#. Search for cables
+#: ../src/tilp_device.c:74 ../src/tilp_device.c:169
+msgid "Searching for link cables..."
+msgstr "Suche nach Verbindungskabeln …"
+
+#: ../src/tilp_device.c:86
+msgid "Searching for handhelds on DirectLink..."
+msgstr "Suche nach Rechnern über DirectLink …"
+
+#: ../src/tilp_device.c:201
+#, c-format
+msgid "Searching for handhelds on %i:%i..."
+msgstr "Suche nach Rechnern an %i:%i …"
+
+#: ../src/tilp_device.c:211
+#, c-format
+msgid "Found: %s on %s:%s"
+msgstr "Gefunden: %s an %s:%s"
+
+#: ../src/tilp_device.c:258
+#, c-format
+msgid ""
+"Command line requested calculator %s on USB port #%d, but no USB calculator "
+"was found on that port."
+msgstr "Die Befehlszeile gibt den Rechner %s an USB-Port #%d vor, aber an diesem Port wurde kein USB-Rechner gefunden."
+
+#: ../src/tilp_device.c:274
+#, c-format
+msgid ""
+"Command line requested calculator %s on USB port #%d, but found %s. Not "
+"overriding the explicit calculator model."
+msgstr "Die Befehlszeile gibt den Rechner %s an USB-Port #%d vor, aber %s wurde gefunden. Das ausdrücklich angegebene Rechnermodell wird beibehalten."
+
+#: ../src/tilp_device.c:280
+#, c-format
+msgid ""
+"Detected calculator %s on selected USB port, overriding configured "
+"calculator %s"
+msgstr "Rechner %s am ausgewählten USB-Port erkannt; das konfigurierte Rechnermodell %s wird ersetzt"
+
+#: ../src/tilp_device.c:309
+msgid "Can't set cable"
+msgstr "Das Kabel kann nicht konfiguriert werden"
+
+#: ../src/tilp_device.c:318
+#, c-format
+msgid "Opening cable %s on port #%d to communicate with calculator %s"
+msgstr "Kabel %s an Port #%d wird zur Kommunikation mit Rechner %s geöffnet"
+
+#: ../src/tilp_device.c:321
+msgid "Attempting to communicate with calculator \"none\" !"
+msgstr "Kommunikationsversuch ohne ausgewählten Rechner!"
+
+#: ../src/tilp_device.c:327
+msgid "Can't set calc"
+msgstr "Der Rechner kann nicht konfiguriert werden"
 
 #: ../src/tilp_files.c:141
 msgid ""
@@ -712,6 +839,43 @@ msgstr "Die temporäre Datei kann nicht verschoben werden.\n"
 msgid "Unable to change directory."
 msgstr "Das Verzeichnis kann nicht geändert werden."
 
+#: ../src/tilp_files.c:498
+#, c-format
+msgid "%i KB"
+msgstr "%i KB"
+
+#: ../src/tilp_files.c:501
+#, c-format
+msgid "%i MB"
+msgstr "%i MB"
+
+#: ../src/tilp_files.c:544
+msgid "Unable to open directory !"
+msgstr "Das Verzeichnis kann nicht geöffnet werden!"
+
+#: ../src/tilp_gif.c:45
+msgid "msg_box1: press ENTER for OK"
+msgstr "msg_box1: Drücken Sie EINGABE für OK"
+
+#: ../src/tilp_gif.c:61
+msgid "msg_box2: press 1 for OK, 2 for CANCEL"
+msgstr "msg_box2: Drücken Sie 1 für OK, 2 zum ABBRECHEN"
+
+#: ../src/tilp_gif.c:83
+#, c-format
+msgid "msg_box3: press 1 for %s, 2 for %s, 3 for %s"
+msgstr "msg_box3: Drücken Sie 1 für %s, 2 für %s, 3 für %s"
+
+#: ../src/tilp_gif.c:105
+msgid "msg_box4: press 1 for FORWARD, press 2 for CANCEL"
+msgstr "msg_box4: Drücken Sie 1 zum FORTFAHREN, 2 zum ABBRECHEN"
+
+#: ../src/tilp_gif.c:127
+msgid "msg_entry: type new content or nothing to cancel "
+msgstr ""
+"msg_entry: Geben Sie den neuen Inhalt ein oder lassen Sie das Feld zum "
+"Abbrechen leer "
+
 #: ../src/tilp_main.c:103
 msgid "Signal SIGINT (Ctrl+C) caught...\n"
 msgstr "Signal SIGINT (Ctrl+C) eingefangen ...\n"
@@ -720,28 +884,28 @@ msgstr "Signal SIGINT (Ctrl+C) eingefangen ...\n"
 msgid "Done.\n"
 msgstr "Erledigt\n"
 
-#: ../src/tilp_main.c:122
+#: ../src/tilp_main.c:124
 #, c-format
 msgid "libticonv library version is %s but %s mini required.\n"
 msgstr ""
 "Libticonv-Bibliotheksversion ist %s, es wird aber mindestens Version %s "
 "benötigt.\n"
 
-#: ../src/tilp_main.c:128
+#: ../src/tilp_main.c:130
 #, c-format
 msgid "libtifiles library version is %s but %s mini required.\n"
 msgstr ""
 "Libtifiles-Bibliotheksversion ist %s, es wird aber mindestens Version %s "
 "benötigt.\n"
 
-#: ../src/tilp_main.c:134
+#: ../src/tilp_main.c:136
 #, c-format
 msgid "libticables library version is %s but %s mini required.\n"
 msgstr ""
 "Libticables-Bibliotheksversion ist %s, es wird aber mindestens Version %s "
 "benötigt.\n"
 
-#: ../src/tilp_main.c:140
+#: ../src/tilp_main.c:142
 #, c-format
 msgid "libticalcs library version is %s but %s mini required.\n"
 msgstr ""
@@ -752,7 +916,7 @@ msgstr ""
 msgid "This function is only available in the Windows version."
 msgstr "Diese Funktion ist nur in der Windows-Version verfügbar."
 
-#: ../src/tilp_paths.c:134
+#: ../src/tilp_paths.c:162
 msgid "My TI Files"
 msgstr "Meine TI Dateien"
 
@@ -883,13 +1047,13 @@ msgstr "Datei(en) umbenennen"
 
 #: ../builder/clist_rbm.ui.h:9
 msgid "Open With _GFM"
-msgstr "Mit gfm öffnen"
+msgstr "Mit _GFM öffnen"
 
-#: ../builder/clist_rbm.ui.h:10 ../builder/tilp.ui.h:14
+#: ../builder/clist_rbm.ui.h:10 ../builder/tilp.ui.h:15
 msgid "Show all Files in local view"
 msgstr "Alle Dateien an_zeigen"
 
-#: ../builder/clist_rbm.ui.h:11 ../builder/tilp.ui.h:15
+#: ../builder/clist_rbm.ui.h:11 ../builder/tilp.ui.h:16
 msgid "_Show all files"
 msgstr "Alle Dateien an_zeigen"
 
@@ -1086,114 +1250,242 @@ msgid "#4"
 msgstr "#4"
 
 #: ../builder/device.ui.h:14
+msgid "Z80"
+msgstr "Z80"
+
+#: ../builder/device.ui.h:15
 msgid "TI-73"
 msgstr "TI-73"
 
-#: ../builder/device.ui.h:15
+#: ../builder/device.ui.h:16
 msgid "TI-80"
 msgstr "TI-80"
 
-#: ../builder/device.ui.h:16
+#: ../builder/device.ui.h:17
 msgid "TI-82"
 msgstr "TI-82"
 
-#: ../builder/device.ui.h:17
+#: ../builder/device.ui.h:18
 msgid "TI-83 / TI-82 Stats(.fr) / TI-76.fr"
 msgstr "TI-83 / TI-82 Stats(.fr) / TI-76.fr"
 
-#: ../builder/device.ui.h:18
-msgid "TI-83+(.fr) / TI-82+"
-msgstr "TI-83+(.fr) / TI-82+"
-
 #: ../builder/device.ui.h:19
-msgid "TI-84+ / TI-83+.fr USB"
-msgstr "TI-84+ / TI-83+.fr USB"
+msgid "TI-83 Plus(.fr) / TI-82+"
+msgstr "TI-83 Plus(.fr) / TI-82+"
 
 #: ../builder/device.ui.h:20
-msgid "TI-84+CSE"
-msgstr "TI-84+CSE"
+msgid "TI-84 Plus / TI-83 Plus.fr USB"
+msgstr "TI-84 Plus / TI-83 Plus.fr USB"
 
 #: ../builder/device.ui.h:21
-msgid "TI-83 Premium CE"
-msgstr "TI-83 Premium CE"
+msgid "TI-84 Plus CSE"
+msgstr "TI-84 Plus CSE"
 
 #: ../builder/device.ui.h:22
-msgid "TI-84 Plus CE"
-msgstr "TI-84 Plus CE"
-
-#: ../builder/device.ui.h:23
 msgid "TI-82 Advanced"
 msgstr "TI-82 Advanced"
 
-#: ../builder/device.ui.h:24
+#: ../builder/device.ui.h:23
 msgid "TI-84 Plus T"
 msgstr "TI-84 Plus T"
 
-#: ../builder/device.ui.h:25
+#: ../builder/device.ui.h:24
 msgid "TI-85"
 msgstr "TI-85"
 
-#: ../builder/device.ui.h:26
+#: ../builder/device.ui.h:25
 msgid "TI-86"
 msgstr "TI-86"
 
+#: ../builder/device.ui.h:26
+msgid "eZ80"
+msgstr "eZ80"
+
 #: ../builder/device.ui.h:27
+msgid "TI-82 Advanced Edition Python"
+msgstr "TI-82 Advanced Edition Python"
+
+#: ../builder/device.ui.h:28
+msgid "TI-83 Premium CE"
+msgstr "TI-83 Premium CE"
+
+#: ../builder/device.ui.h:29
+msgid "TI-84 Plus CE(-T)"
+msgstr "TI-84 Plus CE(-T)"
+
+#: ../builder/device.ui.h:30
+msgid "68k"
+msgstr "68k"
+
+#: ../builder/device.ui.h:31
 msgid "TI-89"
 msgstr "TI-89"
 
-#: ../builder/device.ui.h:28
+#: ../builder/device.ui.h:32
 msgid "TI-89 Titanium"
 msgstr "TI-89 Titanium"
 
-#: ../builder/device.ui.h:29
+#: ../builder/device.ui.h:33
 msgid "TI-92"
 msgstr "TI-92"
 
-#: ../builder/device.ui.h:30
-msgid "TI-92+"
-msgstr "TI-92+"
+#: ../builder/device.ui.h:34
+msgid "TI-92 Plus"
+msgstr "TI-92 Plus"
 
-#: ../builder/device.ui.h:31
-msgid "TI-V200 PLT"
-msgstr "TI-V200 PLT"
+#: ../builder/device.ui.h:35
+msgid "Voyage 200 PLT"
+msgstr "Voyage 200 PLT"
 
-#: ../builder/device.ui.h:32
-msgid "TI-Nspire"
-msgstr "TI-Nspire"
+#: ../builder/device.ui.h:36
+msgid "Nspire"
+msgstr "Nspire"
 
-#: ../builder/device.ui.h:33
+#: ../builder/device.ui.h:37
+msgid "TI-Nspire (Clickpad)"
+msgstr "TI-Nspire (Clickpad)"
+
+#: ../builder/device.ui.h:38
+msgid "TI-Nspire CAS (Clickpad)"
+msgstr "TI-Nspire CAS (Clickpad)"
+
+#: ../builder/device.ui.h:39
+msgid "TI-Nspire (Touchpad)"
+msgstr "TI-Nspire (Touchpad)"
+
+#: ../builder/device.ui.h:40
+msgid "TI-Nspire CAS (Touchpad)"
+msgstr "TI-Nspire CAS (Touchpad)"
+
+#: ../builder/device.ui.h:41
+msgid "TI-Nspire CX"
+msgstr "TI-Nspire CX"
+
+#: ../builder/device.ui.h:42
+msgid "TI-Nspire CX(-C) CAS"
+msgstr "TI-Nspire CX(-C) CAS"
+
+#: ../builder/device.ui.h:43
+msgid "TI-Nspire CM-C"
+msgstr "TI-Nspire CM-C"
+
+#: ../builder/device.ui.h:44
+msgid "TI-Nspire CM-C CAS"
+msgstr "TI-Nspire CM-C CAS"
+
+#: ../builder/device.ui.h:45
+msgid "TI-Nspire CX II"
+msgstr "TI-Nspire CX II"
+
+#: ../builder/device.ui.h:46
+msgid "TI-Nspire CX II-T"
+msgstr "TI-Nspire CX II-T"
+
+#: ../builder/device.ui.h:47
+msgid "TI-Nspire CX II(-T/-C) CAS"
+msgstr "TI-Nspire CX II(-T/-C) CAS"
+
+#: ../builder/device.ui.h:48
+msgid "Evo"
+msgstr "Evo"
+
+#: ../builder/device.ui.h:49
+msgid "TI-83 Evo"
+msgstr "TI-83 Evo"
+
+#: ../builder/device.ui.h:50
+msgid "TI-84 Evo"
+msgstr "TI-84 Evo"
+
+#: ../builder/device.ui.h:51
+msgid "TI-84 Evo-T"
+msgstr "TI-84 Evo-T"
+
+#: ../builder/device.ui.h:52
+msgid "Accessories"
+msgstr "Zubehör"
+
+#: ../builder/device.ui.h:53
+msgid "TI-Presenter"
+msgstr "TI-Presenter"
+
+#: ../builder/device.ui.h:54
+msgid "TI-CBL"
+msgstr "TI-CBL"
+
+#: ../builder/device.ui.h:55
+msgid "TI-CBR"
+msgstr "TI-CBR"
+
+#: ../builder/device.ui.h:56
+msgid "TI-CBL2"
+msgstr "TI-CBL2"
+
+#: ../builder/device.ui.h:57
+msgid "TI-CBR2"
+msgstr "TI-CBR2"
+
+#: ../builder/device.ui.h:58
+msgid "TI-Nspire Cradle"
+msgstr "TI-Nspire Cradle"
+
+#: ../builder/device.ui.h:59
+msgid "Vernier LabPro"
+msgstr "Vernier LabPro"
+
+#: ../builder/device.ui.h:60
+msgid "Vernier LabPro (USB)"
+msgstr "Vernier LabPro (USB)"
+
+#: ../builder/device.ui.h:61
+msgid "Vernier EasyTemp / Go! Temp"
+msgstr "Vernier EasyTemp / Go! Temp"
+
+#: ../builder/device.ui.h:62
+msgid "Vernier EasyLink / Go! Link"
+msgstr "Vernier EasyLink / Go! Link"
+
+#: ../builder/device.ui.h:63
+msgid "Vernier Go! Motion / TI-CBR2 (USB)"
+msgstr "Vernier Go! Motion / TI-CBR2 (USB)"
+
+#: ../builder/device.ui.h:64
+msgid "Vernier Go! Direct"
+msgstr "Vernier Go! Direct"
+
+#: ../builder/device.ui.h:65
 msgid "Communication Settings"
 msgstr "Kommunikationseinstellungen"
 
-#: ../builder/device.ui.h:34
+#: ../builder/device.ui.h:66
 msgid "Cable:"
 msgstr "Kabel:"
 
-#: ../builder/device.ui.h:35
+#: ../builder/device.ui.h:67
 msgid "Port:"
 msgstr "Port:"
 
-#: ../builder/device.ui.h:36
+#: ../builder/device.ui.h:68
 msgid "Calc:"
 msgstr "Taschenrechner:"
 
-#: ../builder/device.ui.h:37
+#: ../builder/device.ui.h:69
 msgid "Timeout:"
 msgstr "Zeitüberschreitung:"
 
-#: ../builder/device.ui.h:38
+#: ../builder/device.ui.h:70
 msgid "Delay:"
 msgstr "Verzögerung:"
 
-#: ../builder/device.ui.h:39
+#: ../builder/device.ui.h:71
 msgid "Timeout value in tenth of seconds."
 msgstr "Timeout-Wert in Zehntelsekunden."
 
-#: ../builder/device.ui.h:40
+#: ../builder/device.ui.h:72
 msgid "Inter-bit delay for serial/parallel link cables."
 msgstr "Inter-Bit-Verzögerung für serielle/parallele Verbindungen."
 
-#: ../builder/device.ui.h:41
+#: ../builder/device.ui.h:73
 msgid ""
 "If checked, TiLP will scan USB devices at startup and will use the first "
 "device found."
@@ -1201,23 +1493,23 @@ msgstr ""
 "Wenn aktiviert, wird TiLP beim Start die USB-Geräte abfragen und das erste "
 "gefundene Gerät verwenden."
 
-#: ../builder/device.ui.h:42
+#: ../builder/device.ui.h:74
 msgid "USB scan at startup"
 msgstr "USB-Abfrage beim Start"
 
-#: ../builder/device.ui.h:43
+#: ../builder/device.ui.h:75
 msgid "Settings"
 msgstr "Einstellungen"
 
-#: ../builder/device.ui.h:44
+#: ../builder/device.ui.h:76
 msgid "Don't know which device you have ? Click =>"
 msgstr "Sie wissen nicht, welches Gerät sie besitzen? Click =>"
 
-#: ../builder/device.ui.h:45
+#: ../builder/device.ui.h:77
 msgid "Probe for attached devices..."
 msgstr "Teste angeschlossene Geräte..."
 
-#: ../builder/device.ui.h:46
+#: ../builder/device.ui.h:78
 msgid "Double-click a line to update settings."
 msgstr "Doppel-Klick einer Zeile zum Update der Einstellungen."
 
@@ -1233,7 +1525,7 @@ msgstr "Name:"
 msgid "Page of Manual"
 msgstr "Seite des Handbuchs"
 
-#: ../builder/options.ui.h:1
+#: ../builder/options.ui.h:1 ../builder/tilp.ui.h:12
 msgid "Options"
 msgstr "Optionen"
 
@@ -1433,7 +1725,7 @@ msgstr "Bildschirmaufnahme"
 msgid "Refresh capture."
 msgstr "Aufnahme aktualisieren"
 
-#: ../builder/screenshot.ui.h:5 ../builder/tilp.ui.h:67
+#: ../builder/screenshot.ui.h:5 ../builder/tilp.ui.h:69
 msgid "Refresh"
 msgstr "Aktualisieren"
 
@@ -1495,7 +1787,7 @@ msgstr "Sende Dateien zum Gerät"
 
 #: ../builder/tilp.ui.h:7
 msgid "_Backup"
-msgstr "Sicherungskopie"
+msgstr "_Sicherungskopie"
 
 #: ../builder/tilp.ui.h:8
 msgid "Backup Device Contents"
@@ -1503,7 +1795,7 @@ msgstr "Den Taschenrechnerinhalt sichern"
 
 #: ../builder/tilp.ui.h:9
 msgid "_Restore"
-msgstr "Wiederherstellen"
+msgstr "_Wiederherstellen"
 
 #: ../builder/tilp.ui.h:10
 msgid "Restore Device Contents"
@@ -1513,234 +1805,235 @@ msgstr "Den Taschenrechnerinhalt wiederherstellen"
 msgid "_Edit"
 msgstr "_Bearbeiten"
 
-#: ../builder/tilp.ui.h:12
+#: ../builder/tilp.ui.h:13
 msgid "_View"
 msgstr "_Ansicht"
 
-#: ../builder/tilp.ui.h:13
+#: ../builder/tilp.ui.h:14
 msgid "_Local View"
 msgstr "_Lokale Ansicht"
 
-#: ../builder/tilp.ui.h:16
+#: ../builder/tilp.ui.h:17
 msgid "_Tools"
 msgstr "_Werkzeuge"
 
-#: ../builder/tilp.ui.h:17
+#: ../builder/tilp.ui.h:18
 msgid "Get Calc _Info"
 msgstr "Hole Rechner _Info"
 
-#: ../builder/tilp.ui.h:18
+#: ../builder/tilp.ui.h:19
 msgid "Take _Screenshot"
 msgstr "Mache _Screenshot"
 
-#: ../builder/tilp.ui.h:19
-msgid "Dump _Rom"
-msgstr "ROM auslesen"
-
 #: ../builder/tilp.ui.h:20
-msgid "Set _Clock"
-msgstr "Uhr einstellen"
+msgid "Dump _Rom"
+msgstr "_ROM auslesen"
 
 #: ../builder/tilp.ui.h:21
+msgid "Set _Clock"
+msgstr "_Uhr einstellen"
+
+#: ../builder/tilp.ui.h:22
 msgid "Get _ID-List"
 msgstr "Hole _ID-List"
 
-#: ../builder/tilp.ui.h:22
+#: ../builder/tilp.ui.h:23
+msgid "_Help"
+msgstr "_Hilfe"
+
+#: ../builder/tilp.ui.h:24
 msgid "The TiLP User's Manual in html format."
 msgstr "Das TiLP-Benutzerhandbuch im HTML-Format"
 
-#: ../builder/tilp.ui.h:23
+#: ../builder/tilp.ui.h:25
 msgid "_Man Page"
 msgstr "_Handbuchseite"
 
-#: ../builder/tilp.ui.h:24
+#: ../builder/tilp.ui.h:26
 msgid "The Linux manual page."
 msgstr "Die Linux-Handbuchseite"
 
-#: ../builder/tilp.ui.h:25
+#: ../builder/tilp.ui.h:27
 msgid "_Bookmarks"
 msgstr "_Lesezeichen"
 
-#: ../builder/tilp.ui.h:26
+#: ../builder/tilp.ui.h:28
 msgid "http://education.ti.com, the Texas Instruments web site"
 msgstr "http://education.ti.com, die Texas-Instruments-Website"
 
-#: ../builder/tilp.ui.h:27
+#: ../builder/tilp.ui.h:29
 msgid "TI's web site"
 msgstr "TIs Website"
 
-#: ../builder/tilp.ui.h:28
+#: ../builder/tilp.ui.h:30
 msgid ""
 "http://epsstore.ti.com, TI's store for OS upgrades and FLASH applications."
 msgstr ""
 "http://epsstore.ti.com, TIs Laden für OS-Upgrades und FLASH-Anwendungen"
 
-#: ../builder/tilp.ui.h:29
+#: ../builder/tilp.ui.h:31
 msgid "Calculator software"
 msgstr "Taschenrechner-Software"
 
-#: ../builder/tilp.ui.h:30
+#: ../builder/tilp.ui.h:32
 msgid "A great web site on TI related stuffs."
 msgstr "Eine tolle Website mit TI-Zeug"
 
-#: ../builder/tilp.ui.h:31
+#: ../builder/tilp.ui.h:33
 msgid "ticalc.org"
 msgstr "ticalc.org"
 
-#: ../builder/tilp.ui.h:32
+#: ../builder/tilp.ui.h:34
 msgid "The leading French-speaking calculator web site."
 msgstr "Eine französische Taschenrechner-Website."
 
-#: ../builder/tilp.ui.h:33
+#: ../builder/tilp.ui.h:35
 msgid "tiplanet.org"
 msgstr "tiplanet.org"
 
-#: ../builder/tilp.ui.h:34
+#: ../builder/tilp.ui.h:36
 msgid "A French calculator web site."
 msgstr "Eine französische Taschenrechner-Website"
 
-#: ../builder/tilp.ui.h:35
+#: ../builder/tilp.ui.h:37
 msgid "ti-fr.org"
 msgstr "ti-fr.org"
 
-#: ../builder/tilp.ui.h:36
+#: ../builder/tilp.ui.h:38
 msgid "http://lpg.ticalc.org, the Linux Programmer Group"
 msgstr "http://lpg.ticalc.org, die Linux-Programmierergruppe"
 
-#: ../builder/tilp.ui.h:37
+#: ../builder/tilp.ui.h:39
 msgid "The LPG"
 msgstr "Das LPG"
 
-#: ../builder/tilp.ui.h:38
+#: ../builder/tilp.ui.h:40
 msgid "http://tilp.info, the TiLP web site."
 msgstr "http://tilp.info, die TiLP-Website"
 
-#: ../builder/tilp.ui.h:39
+#: ../builder/tilp.ui.h:41
 msgid "TiLP's web site"
 msgstr "TiLPs Website"
 
-#: ../builder/tilp.ui.h:40
+#: ../builder/tilp.ui.h:42
 msgid "_Report Bug"
 msgstr "_Melde Bug"
 
-#: ../builder/tilp.ui.h:41
+#: ../builder/tilp.ui.h:43
 msgid "How to send a bug report..."
 msgstr "Wie Sie einen Fehlerbericht senden können ..."
 
-#: ../builder/tilp.ui.h:42
+#: ../builder/tilp.ui.h:44
 msgid "_ChangeLog"
 msgstr "_ChangeLog"
 
-#: ../builder/tilp.ui.h:43
+#: ../builder/tilp.ui.h:45
 msgid "Display the log file generated by TiLP. Useful for debugging problems."
 msgstr ""
 "Die von TiLP erzeugte Protokolldatei anzeigen. Nützlich für Debugging-"
 "Probleme"
 
-#: ../builder/tilp.ui.h:44
+#: ../builder/tilp.ui.h:46
 msgid "About TiLP..."
 msgstr "Über TiLP ..."
 
-#: ../builder/tilp.ui.h:45
+#: ../builder/tilp.ui.h:47
 msgid "Check whether calculator is ready..."
 msgstr "Prüfung, ob der Taschenrechner bereit ist ...)"
 
-#: ../builder/tilp.ui.h:46
+#: ../builder/tilp.ui.h:48
 msgid "Ready ?"
 msgstr "Bereit?"
 
-#: ../builder/tilp.ui.h:47
+#: ../builder/tilp.ui.h:49
 msgid "List calculator content (folders, variables and applications)."
 msgstr "Taschenrechnerinhalt auflisten (Ordner, Variablen und Anwendungen)"
 
-#: ../builder/tilp.ui.h:48
+#: ../builder/tilp.ui.h:50
 msgid "Dirlist"
 msgstr "Dirlist"
 
-#: ../builder/tilp.ui.h:49
+#: ../builder/tilp.ui.h:51
 msgid "Backup the calculator content."
 msgstr "Den Taschenrechnerinhalt sichern"
 
-#: ../builder/tilp.ui.h:51
+#: ../builder/tilp.ui.h:53
 msgid "Restore the calculator content."
 msgstr "Den Taschenrechnerinhalt wiederherstellen"
 
-#: ../builder/tilp.ui.h:53
+#: ../builder/tilp.ui.h:55
 msgid "Receive variables from non-silent calculators."
 msgstr "Variablen von nicht stillen Taschenrechnern empfangen"
 
-#: ../builder/tilp.ui.h:54
+#: ../builder/tilp.ui.h:56
 msgid "Receive"
 msgstr "Empfangen"
 
-#: ../builder/tilp.ui.h:55
+#: ../builder/tilp.ui.h:57
 msgid "Send variables to non-silent calculators."
 msgstr "Variablen von non-silent Taschenrechnern empfangen."
 
-#: ../builder/tilp.ui.h:56
+#: ../builder/tilp.ui.h:58
 msgid "Send"
 msgstr "Senden"
 
-#: ../builder/tilp.ui.h:57
+#: ../builder/tilp.ui.h:59
 msgid "Calculator files"
 msgstr "Taschenrechnerdateien"
 
-#: ../builder/tilp.ui.h:58
+#: ../builder/tilp.ui.h:60
 msgid "0 bytes free"
 msgstr "0 Byte frei"
 
-#: ../builder/tilp.ui.h:59
+#: ../builder/tilp.ui.h:61
 msgid "RAM "
 msgstr "RAM"
 
-#: ../builder/tilp.ui.h:60
+#: ../builder/tilp.ui.h:62
 msgid "FLASH "
 msgstr "FLASH "
 
-#: ../builder/tilp.ui.h:61
+#: ../builder/tilp.ui.h:63
 msgid "Memory:"
 msgstr "Speicher:"
 
-#: ../builder/tilp.ui.h:62
+#: ../builder/tilp.ui.h:64
 msgid "Create a new directory."
 msgstr "Ein neues Verzeichns erstellen"
 
-#: ../builder/tilp.ui.h:63
+#: ../builder/tilp.ui.h:65
 msgid "Folder"
 msgstr "Ordner"
 
-#: ../builder/tilp.ui.h:64
+#: ../builder/tilp.ui.h:66
 msgid "Delete selected files."
 msgstr "Ausgewählte Dateien löschen"
 
-#: ../builder/tilp.ui.h:65
+#: ../builder/tilp.ui.h:67
 msgid "Delete"
 msgstr "Löschen"
 
-#: ../builder/tilp.ui.h:66
+#: ../builder/tilp.ui.h:68
 msgid "Refresh right frame."
 msgstr "Rechten Rahmen aktualisieren"
 
-#: ../builder/tilp.ui.h:68
+#: ../builder/tilp.ui.h:70
 msgid "Computer files"
 msgstr "Computer-Dateien"
 
-#: ../builder/tilp.ui.h:69
+#: ../builder/tilp.ui.h:71
 msgid "/home/romain/"
 msgstr "/home/romain/"
 
-#: ../builder/tilp.ui.h:70
+#: ../builder/tilp.ui.h:72
 msgid "Current folder:"
 msgstr "Aktueller Ordner"
 
-#~ msgid "TI-83+"
-#~ msgstr "TI-83+"
+#~ msgid "TI-92+"
+#~ msgstr "TI-92+"
 
 #~ msgid "Connection is being reset... Please wait for 2 seconds."
 #~ msgstr "Verbindung wird zurückgesetzt ... Bitte warten Sie zwei Sekunden."
-
-#~ msgid "Can't set cable."
-#~ msgstr "Kabel kann nicht gesetzt werden."
 
 #~ msgid "Unknown calculator model with pixel_format=%d\n"
 #~ msgstr "Unbekanntes Taschenrechnermodell mit pixel_format=%d\n"
